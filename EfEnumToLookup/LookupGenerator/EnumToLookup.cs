@@ -14,6 +14,7 @@ namespace EfEnumToLookup.LookupGenerator
         public EnumToLookup()
         {
             NameFieldLength = 255; // default
+            TableNamePrefix = "Enum_";
         }
 
         /// <summary>
@@ -21,6 +22,13 @@ namespace EfEnumToLookup.LookupGenerator
         /// Adjust to suit your data if required, defaults to 255.
         /// </summary>
         public int NameFieldLength { get; set; }
+
+        /// <summary>
+        /// Prefix to add to all the generated tables to separate help group them together
+        /// and make them stand out as different from other tables.
+        /// Defaults to "Enum_" set to null or "" to not have any prefix.
+        /// </summary>
+        public string TableNamePrefix { get; set; }
 
         public void Apply(DbContext context)
         {
@@ -38,8 +46,8 @@ namespace EfEnumToLookup.LookupGenerator
             foreach (var lookup in enums)
             {
                 runSql(string.Format(
-                    @"CREATE TABLE [{0}] (Id int, Name nvarchar({1}));",
-                    lookup.Name, NameFieldLength));
+                    @"CREATE TABLE [{0}{1}] (Id int, Name nvarchar({2}));",
+                    TableNamePrefix, lookup.Name, NameFieldLength));
             }
         }
 
