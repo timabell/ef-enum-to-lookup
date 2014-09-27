@@ -6,6 +6,6 @@
 
         public string Name { get; set; }
 
-        public Ears? Ears { get; set; }
+        public Ears TehEars { get; set; }
     }
 }

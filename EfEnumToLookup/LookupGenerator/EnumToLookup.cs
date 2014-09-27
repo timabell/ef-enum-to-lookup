@@ -38,5 +38,12 @@ namespace EfEnumToLookup.LookupGenerator
             public string Source { get; set; }
             public string Destination { get; set; }
         }
+
+        public IList<PropertyInfo> FindEnums(Type type)
+        {
+            return type.GetProperties()
+                .Where(p => p.PropertyType.IsEnum)
+                .ToList();
+        }
     }
 }

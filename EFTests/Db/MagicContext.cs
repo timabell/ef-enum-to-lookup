@@ -5,6 +5,6 @@ namespace EFTests.Db
 {
     public class MagicContext : DbContext
     {
-        public DbSet<Rabbit> Rabbits { get; set; }
+        public DbSet<Rabbit> PeskyWabbits { get; set; }
     }
 }

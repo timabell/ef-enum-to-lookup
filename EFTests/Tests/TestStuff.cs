@@ -15,8 +15,8 @@ namespace EFTests.Tests
             Database.SetInitializer(new TestInitializer());
             using (var context = new MagicContext())
             {
-                var roger = new Rabbit { Name = "Roger", Ears = Ears.Pointy };
-                context.Rabbits.Add(roger);
+                var roger = new Rabbit { Name = "Roger", TehEars = Ears.Pointy };
+                context.PeskyWabbits.Add(roger);
                 context.SaveChanges();
             }
         }
@@ -26,9 +26,9 @@ namespace EFTests.Tests
         {
             using (var context = new MagicContext())
             {
-                var actual = context.Rabbits.First();
+                var actual = context.PeskyWabbits.First();
                 Assert.AreEqual("Roger", actual.Name);
-                Assert.AreEqual(Ears.Pointy, actual.Ears);
+                Assert.AreEqual(Ears.Pointy, actual.TehEars);
             }
         }
     }
