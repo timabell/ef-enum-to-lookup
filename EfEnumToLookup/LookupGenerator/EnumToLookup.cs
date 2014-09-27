@@ -42,7 +42,8 @@ namespace EfEnumToLookup.LookupGenerator
         public IList<PropertyInfo> FindEnums(Type type)
         {
             return type.GetProperties()
-                .Where(p => p.PropertyType.IsEnum)
+                .Where(p => p.PropertyType.IsEnum
+                    || (p.PropertyType.IsGenericType && p.PropertyType.GenericTypeArguments.First().IsEnum))
                 .ToList();
         }
     }

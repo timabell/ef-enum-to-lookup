@@ -24,15 +24,22 @@ namespace EFTests.Tests
             Assert.AreEqual("PeskyWabbits", rabbits.Name);
         }
 
-
         [Test]
         public void FindsEnumOnDbSet()
         {
             var enums = _enumToLookup.FindEnums(typeof(Rabbit));
-            Assert.AreEqual(1, enums.Count);
             var prop = enums.SingleOrDefault(p => p.Name == "TehEars");
             Assert.IsNotNull(prop, "Enum property not found");
             Assert.AreEqual(typeof(Ears), prop.PropertyType);
+        }
+
+        [Test]
+        public void FindsNullableEnumOnDbSet()
+        {
+            var enums = _enumToLookup.FindEnums(typeof(Rabbit));
+            var prop = enums.SingleOrDefault(p => p.Name == "SpeedyLegs");
+            Assert.IsNotNull(prop, "Enum property not found");
+            Assert.AreEqual(typeof(Legs?), prop.PropertyType);
         }
     }
 }
