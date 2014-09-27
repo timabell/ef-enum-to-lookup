@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("EFTests")]
 
 namespace EfEnumToLookup.LookupGenerator
 {
