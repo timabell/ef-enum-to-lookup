@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -56,19 +55,6 @@ namespace EfEnumToLookup.LookupGenerator
                 .Where(p => p.PropertyType.IsGenericType
                     && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
                 .ToList();
-        }
-
-        [DebuggerDisplay("{nq:DebugDisplay")]
-        internal class Reference
-        {
-            public string ReferencingTable { get; set; }
-            public string ReferencingField { get; set; }
-            public Type EnumType { get; set; }
-
-            public string DebugDisplay
-            {
-                get { return string.Format("{0}.{1}", ReferencingTable, ReferencingField); }
-            }
         }
 
         public IList<PropertyInfo> FindEnums(Type type)
