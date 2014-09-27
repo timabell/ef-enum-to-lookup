@@ -1,4 +1,4 @@
-﻿namespace EFTests
+﻿namespace EFTests.Model
 {
     public class Rabbit
     {

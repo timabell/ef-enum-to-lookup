@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using EFTests.Database;
+using EFTests.Model;
 using NUnit.Framework;
 
-namespace EFTests
+namespace EFTests.Tests
 {
     [TestFixture]
     public class TestStuff
@@ -13,6 +15,7 @@ namespace EFTests
             {
                 var roger = new Rabbit { Name = "Roger" };
                 context.Rabbits.Add(roger);
+                context.SaveChanges();
                 var actual = context.Rabbits.First();
                 Assert.AreEqual("Roger", actual.Name);
             }
