@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("EFTests")]
+[assembly: InternalsVisibleTo("EFTests")]
 
 namespace EfEnumToLookup.LookupGenerator
 {
@@ -21,6 +23,14 @@ namespace EfEnumToLookup.LookupGenerator
         internal IList<Reference> FindReferences(Type contextType)
         {
             return new List<Reference>();
+        }
+
+        internal IList<PropertyInfo> FindDbSets(Type contextType)
+        {
+            return contextType.GetProperties()
+                .Where(p => p.PropertyType.IsGenericType
+                    && p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+                .ToList();
         }
 
         internal class Reference

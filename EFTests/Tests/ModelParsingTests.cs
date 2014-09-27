@@ -1,5 +1,8 @@
-﻿using EfEnumToLookup.LookupGenerator;
+﻿using System.Data.Entity;
+using System.Linq;
+using EfEnumToLookup.LookupGenerator;
 using EFTests.Db;
+using EFTests.Model;
 using NUnit.Framework;
 
 namespace EFTests.Tests
@@ -12,8 +15,11 @@ namespace EFTests.Tests
         {
             var enumToLookup = new EnumToLookup();
             var contextType = typeof(MagicContext);
-            var refs = enumToLookup.FindReferences(contextType);
-            Assert.AreEqual(0, refs.Count);
+            var dbSets = enumToLookup.FindDbSets(contextType);
+            Assert.AreEqual(1, dbSets.Count);
+            var rabbits = dbSets.First();
+            Assert.AreEqual(typeof(DbSet<Rabbit>), rabbits.PropertyType);
+            Assert.AreEqual("Rabbits", rabbits.Name);
         }
     }
 }
