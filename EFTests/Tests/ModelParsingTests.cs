@@ -30,9 +30,9 @@ namespace EFTests.Tests
         {
             var enums = _enumToLookup.FindEnums(typeof(Rabbit));
             Assert.AreEqual(1, enums.Count);
-            var prop = enums.First();
+            var prop = enums.SingleOrDefault(p => p.Name == "TehEars");
+            Assert.IsNotNull(prop, "Enum property not found");
             Assert.AreEqual(typeof(Ears), prop.PropertyType);
-            Assert.AreEqual("TehEars", prop.Name);
         }
     }
 }
