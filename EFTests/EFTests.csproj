@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Db\MagicContext.cs" />
+    <Compile Include="Model\Ears.cs" />
     <Compile Include="Model\Rabbit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Db\TestInitializer.cs" />
