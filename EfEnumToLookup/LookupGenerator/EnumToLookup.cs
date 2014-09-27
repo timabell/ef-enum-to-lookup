@@ -34,11 +34,24 @@ namespace EfEnumToLookup.LookupGenerator
                             // todo: apply fluent / attribute name changes
                             ReferencingTable = dbSet.Name,
                             ReferencingField = enumProp.Name,
-                            EnumType = enumProp.PropertyType,
+                            EnumType = UnwrapIfNullable(enumProp.PropertyType),
                         }
                     ));
             }
             return enumReferences;
+        }
+
+        private static Type UnwrapIfNullable(Type type)
+        {
+            if (!type.IsGenericType)
+            {
+                return type;
+            }
+            if (type.GetGenericTypeDefinition() != typeof (Nullable<>))
+            {
+                throw new NotSupportedException(string.Format("Unexpected generic enum type in model: {0}, expected non-generic or nullable.", type));
+            }
+            return type.GenericTypeArguments.First();
         }
 
         /// <summary>

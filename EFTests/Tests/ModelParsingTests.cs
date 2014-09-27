@@ -33,6 +33,7 @@ namespace EFTests.Tests
             Assert.IsNotNull(legs, "SpeedyLegs ref not found");
             var ears = refs.SingleOrDefault(r => r.ReferencingField == "TehEars");
             Assert.IsNotNull(ears, "TehEars ref not found");
+            Assert.IsTrue(refs.All(r => r.EnumType.IsEnum), "Non-enum type found");
         }
 
         [Test]
