@@ -7,7 +7,7 @@ namespace EFTests.Db
     {
         protected override void Seed(MagicContext context)
         {
-            var enumToLookup = new EnumToLookup();
+            IEnumToLookup enumToLookup = new EnumToLookup();
             enumToLookup.Apply(context);
             base.Seed(context);
         }
