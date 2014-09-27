@@ -1,7 +1,7 @@
 ﻿using System.Data.Entity;
 using EFTests.Model;
 
-namespace EFTests.Database
+namespace EFTests.Db
 {
     public class MagicContext : DbContext
     {
