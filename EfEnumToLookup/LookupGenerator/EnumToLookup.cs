@@ -20,16 +20,16 @@ namespace EfEnumToLookup.LookupGenerator
             // add fks from all referencing tables
         }
 
-        internal IList<Reference> FindReferences(Type contextType)
+        internal IList<EnumReference> FindReferences(Type contextType)
         {
             var dbSets = FindDbSets(contextType);
-            var enumReferences = new List<Reference>();
+            var enumReferences = new List<EnumReference>();
             foreach (var dbSet in dbSets)
             {
                 var dbSetType = DbSetType(dbSet);
                 var enumProperties = FindEnums(dbSetType);
                 enumReferences.AddRange(enumProperties
-                    .Select(enumProp => new Reference
+                    .Select(enumProp => new EnumReference
                         {
                             // todo: apply fluent / attribute name changes
                             ReferencingTable = dbSet.Name,
