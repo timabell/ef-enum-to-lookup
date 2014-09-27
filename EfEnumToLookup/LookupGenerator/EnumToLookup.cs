@@ -11,13 +11,36 @@ namespace EfEnumToLookup.LookupGenerator
 {
     public class EnumToLookup : IEnumToLookup
     {
+        public EnumToLookup()
+        {
+            NameFieldLength = 255; // default
+        }
+
+        /// <summary>
+        /// The size of the Name field that will be added to the generated lookup tables.
+        /// Adjust to suit your data if required, defaults to 255.
+        /// </summary>
+        public int NameFieldLength { get; set; }
+
         public void Apply(DbContext context)
         {
             // recurese through dbsets and references finding anything that uses an enum
             var refs = FindReferences(context.GetType());
             // for the list of enums generate tables
+            var enums = refs.Select(r => r.EnumType).Distinct();
+            CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
             // t-sql merge values into table
             // add fks from all referencing tables
+        }
+
+        private void CreateTables(IEnumerable<Type> enums, Action<string> runSql)
+        {
+            foreach (var lookup in enums)
+            {
+                runSql(string.Format(
+                    @"CREATE TABLE [{0}] (Id int, Name nvarchar({1}));",
+                    lookup.Name, NameFieldLength));
+            }
         }
 
         internal IList<EnumReference> FindReferences(Type contextType)
@@ -47,7 +70,7 @@ namespace EfEnumToLookup.LookupGenerator
             {
                 return type;
             }
-            if (type.GetGenericTypeDefinition() != typeof (Nullable<>))
+            if (type.GetGenericTypeDefinition() != typeof(Nullable<>))
             {
                 throw new NotSupportedException(string.Format("Unexpected generic enum type in model: {0}, expected non-generic or nullable.", type));
             }
