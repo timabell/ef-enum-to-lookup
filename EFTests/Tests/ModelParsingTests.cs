@@ -25,6 +25,17 @@ namespace EFTests.Tests
         }
 
         [Test]
+        public void FindsReferences()
+        {
+            var refs = _enumToLookup.FindReferences(_contextType);
+            Assert.AreEqual(2, refs.Count);
+            var legs = refs.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
+            Assert.IsNotNull(legs, "SpeedyLegs ref not found");
+            var ears = refs.SingleOrDefault(r => r.ReferencingField == "TehEars");
+            Assert.IsNotNull(ears, "TehEars ref not found");
+        }
+
+        [Test]
         public void FindsEnumOnDbSet()
         {
             var enums = _enumToLookup.FindEnums(typeof(Rabbit));

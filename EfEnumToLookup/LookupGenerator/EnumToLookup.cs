@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,31 @@ namespace EfEnumToLookup.LookupGenerator
 
         internal IList<Reference> FindReferences(Type contextType)
         {
-            return new List<Reference>();
+            var dbSets = FindDbSets(contextType);
+            var enumReferences = new List<Reference>();
+            foreach (var dbSet in dbSets)
+            {
+                var dbSetType = DbSetType(dbSet);
+                var enumProperties = FindEnums(dbSetType);
+                enumReferences.AddRange(enumProperties
+                    .Select(enumProp => new Reference
+                        {
+                            // todo: apply fluent / attribute name changes
+                            ReferencingTable = dbSet.Name,
+                            ReferencingField = enumProp.Name,
+                            EnumType = enumProp.PropertyType,
+                        }
+                    ));
+            }
+            return enumReferences;
+        }
+
+        /// <summary>
+        /// Unwraps the type inside a DbSet&lt;&gt;
+        /// </summary>
+        private static Type DbSetType(PropertyInfo dbSet)
+        {
+            return dbSet.PropertyType.GenericTypeArguments.First();
         }
 
         internal IList<PropertyInfo> FindDbSets(Type contextType)
@@ -33,10 +58,17 @@ namespace EfEnumToLookup.LookupGenerator
                 .ToList();
         }
 
+        [DebuggerDisplay("{nq:DebugDisplay")]
         internal class Reference
         {
-            public string Source { get; set; }
-            public string Destination { get; set; }
+            public string ReferencingTable { get; set; }
+            public string ReferencingField { get; set; }
+            public Type EnumType { get; set; }
+
+            public string DebugDisplay
+            {
+                get { return string.Format("{0}.{1}", ReferencingTable, ReferencingField); }
+            }
         }
 
         public IList<PropertyInfo> FindEnums(Type type)
