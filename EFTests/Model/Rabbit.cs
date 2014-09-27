@@ -7,5 +7,7 @@
         public string Name { get; set; }
 
         public Ears TehEars { get; set; }
+
+        public Legs? SpeedyLegs { get; set; }
     }
 }
