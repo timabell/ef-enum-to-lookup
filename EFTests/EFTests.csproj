@@ -49,7 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Cave.cs" />
     <Compile Include="Db\MagicContext.cs" />
+    <Compile Include="Model\Echo.cs" />
+    <Compile Include="Model\Warren.cs" />
     <Compile Include="Model\Chicken.cs" />
     <Compile Include="Model\Ears.cs" />
     <Compile Include="Model\Fox.cs" />
@@ -58,7 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Db\TestInitializer.cs" />
     <Compile Include="Tests\ModelParsingTests.cs" />
-    <Compile Include="Tests\NameFinderTests.cs" />
     <Compile Include="Tests\TestStuff.cs" />
   </ItemGroup>
   <ItemGroup>

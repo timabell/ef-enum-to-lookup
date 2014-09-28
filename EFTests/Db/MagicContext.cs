@@ -7,6 +7,9 @@ namespace EFTests.Db
 	{
 		public DbSet<Rabbit> PeskyWabbits { get; set; }
 
+		// this one goes deeper
+		public DbSet<Warren> Warrens { get; set; }
+
 		public DbSet<Chicken> LittleChickens { get; set; }
 
 		public DbSet<Fox> CunningFoxes { get; set; }

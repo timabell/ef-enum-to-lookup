@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Core.Mapping;
+using System.Data.Entity.Core.Metadata.Edm;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -115,23 +118,63 @@ MERGE INTO [{0}] dst
 
 		internal IList<EnumReference> FindReferences(DbContext context)
 		{
-			var dbSets = FindDbSets(context.GetType());
 			var enumReferences = new List<EnumReference>();
-			foreach (var dbSet in dbSets)
+			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
+
+			// Get the part of the model that contains info about the actual CLR types
+			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));
+
+			// Get the entity type from the model that maps to the CLR type
+			var entityTypes = metadata
+				.GetItems<EntityType>(DataSpace.OSpace);
+			//var entitiesWithEnums = entityTypes.Where(e => e.Properties.Any(p => p.IsEnumType));
+			foreach (var entity in entityTypes)
 			{
-				var dbSetType = DbSetType(dbSet);
-				var enumProperties = FindEnums(dbSetType);
-				enumReferences.AddRange(enumProperties
-					.Select(enumProp => new EnumReference
+				var tableName = GetTableName(metadata, entity);
+
+				foreach (var property in entity.Properties)
+				{
+					if (property.IsEnumType)
 					{
-						// todo: apply fluent / attribute name changes
-						ReferencingTable = TableNameFinder.GetTableName(dbSetType, context),
-						ReferencingField = enumProp.Name,
-						EnumType = UnwrapIfNullable(enumProp.PropertyType),
+						var clrType = objectItemCollection.GetClrType(property.EnumType);
+						enumReferences.Add(new EnumReference
+						{
+							ReferencingTable = tableName,
+							ReferencingField = property.Name,
+							EnumType = clrType,
+						});
 					}
-					));
+				}
 			}
 			return enumReferences;
+		}
+
+		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
+		{
+			// http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+			// Get the entity type from the model that maps to the CLR type
+			var entityType = metadata
+				.GetItems<EntityType>(DataSpace.OSpace)
+				.Single(e => e == entity);
+			// Get the entity set that uses this entity type
+			var entitySet = metadata
+				.GetItems<EntityContainer>(DataSpace.CSpace)
+				.Single()
+				.EntitySets
+				.Single(s => s.ElementType.Name == entityType.Name);
+			// Find the mapping between conceptual and storage model for this entity set
+			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace)
+				.Single()
+				.EntitySetMappings
+				.Single(s => s.EntitySet == entitySet);
+
+			// Find the storage entity set (table) that the entity is mapped
+			var table = mapping
+				.EntityTypeMappings.Single()
+				.Fragments.Single()
+				.StoreEntitySet;
+			var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name;
+			return tableName;
 		}
 
 		private static Type UnwrapIfNullable(Type type)
@@ -140,7 +183,7 @@ MERGE INTO [{0}] dst
 			{
 				return type;
 			}
-			if (type.GetGenericTypeDefinition() != typeof (Nullable<>))
+			if (type.GetGenericTypeDefinition() != typeof(Nullable<>))
 			{
 				throw new NotSupportedException(
 					string.Format("Unexpected generic enum type in model: {0}, expected non-generic or nullable.", type));
@@ -160,7 +203,7 @@ MERGE INTO [{0}] dst
 		{
 			return contextType.GetProperties()
 				.Where(p => p.PropertyType.IsGenericType
-				            && p.PropertyType.GetGenericTypeDefinition() == typeof (DbSet<>))
+										&& p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
 				.ToList();
 		}
 
@@ -168,7 +211,7 @@ MERGE INTO [{0}] dst
 		{
 			return type.GetProperties()
 				.Where(p => p.PropertyType.IsEnum
-				            || (p.PropertyType.IsGenericType && p.PropertyType.GenericTypeArguments.First().IsEnum))
+										|| (p.PropertyType.IsGenericType && p.PropertyType.GenericTypeArguments.First().IsEnum))
 				.ToList();
 		}
 	}

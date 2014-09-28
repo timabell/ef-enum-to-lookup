@@ -28,12 +28,14 @@ namespace EFTests.Tests
 			{
 				references = _enumToLookup.FindReferences(context);
 			}
-			Assert.AreEqual(2, references.Count);
 			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
 			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
 			var ears = references.SingleOrDefault(r => r.ReferencingField == "TehEars");
 			Assert.IsNotNull(ears, "TehEars ref not found");
+			var echos = references.SingleOrDefault(r => r.ReferencingField == "EchoType");
+			Assert.IsNotNull(echos, "EchoType ref not found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
+			Assert.AreEqual(3, references.Count);
 		}
 
 		[Test]
