@@ -6,5 +6,7 @@ namespace EFTests.Model
 
 		public Cave MasterChamber { get; set; }
 		public int CaveId { get; set; }
+
+		public Heat? HowHot { get; set; }
 	}
 }
