@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>ef-enum-to-lookup</id>
+        <version>1.0.0</version>
+        <title>Enum Lookup Table Generator for Entity Framework 6</title>
+        <authors>Tim Abell</authors>
+        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+        <projectUrl>https://github.com/timabell/ef-enum-to-lookup</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Entity Framework 6.1 Enum Lookup Table Generator
+Makes up for a missing feature in Entity Framework 6.1
+
+Creates lookup tables and foreign key constraints based on the enums used in your model.
+
+Use the properties exposed to control behaviour.
+
+Run EnumToLookup.Apply from your Seed method in either your database initializer or your EF Migrations.
+
+It is safe to run repeatedly, and will ensure enum values are kept in line with your current code.
+
+Source code: https://github.com/timabell/ef-enum-to-lookup
+
+License: MIT</description>
+        <summary>Entity Framework 6.1 Enum Lookup Table Generator
+
+Creates lookup tables and foreign key constraints based on the enums used in your model.</summary>
+        <releaseNotes>First release</releaseNotes>
+        <copyright>Tim Abell</copyright>
+        <language>en-GB</language>
+    </metadata>
+    <files>
+        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.dll" target="lib\net45\EfEnumToLookup.dll" />
+        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.pdb" target="lib\net45\EfEnumToLookup.pdb" />
+    </files>
+</package>
