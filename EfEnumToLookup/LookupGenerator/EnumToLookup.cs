@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 [assembly: InternalsVisibleTo("EFTests")]
 
@@ -19,7 +20,14 @@ namespace EfEnumToLookup.LookupGenerator
 		{
 			NameFieldLength = 255; // default
 			TableNamePrefix = "Enum_";
+			SplitWords = true;
 		}
+
+		/// <summary>
+		/// If set to true (default) enum names will have spaces inserted between
+		/// PascalCase words, e.g. enum SomeValue is stored as "Some Value".
+		/// </summary>
+		public bool SplitWords { get; set; }
 
 		/// <summary>
 		/// The size of the Name field that will be added to the generated lookup tables.
@@ -81,6 +89,11 @@ namespace EfEnumToLookup.LookupGenerator
 			{
 				var id = (int)value;
 				var name = value.ToString();
+				if (SplitWords)
+				{
+					// http://stackoverflow.com/questions/773303/splitting-camelcase/25876326#25876326
+					name = Regex.Replace(name, "(?<=[a-z])([A-Z])", " $1", RegexOptions.Compiled);
+				}
 				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, '{1}');", id, name));
 			}
 
