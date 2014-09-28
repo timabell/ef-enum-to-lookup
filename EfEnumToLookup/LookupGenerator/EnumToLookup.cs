@@ -177,28 +177,6 @@ MERGE INTO [{0}] dst
 			return tableName;
 		}
 
-		private static Type UnwrapIfNullable(Type type)
-		{
-			if (!type.IsGenericType)
-			{
-				return type;
-			}
-			if (type.GetGenericTypeDefinition() != typeof(Nullable<>))
-			{
-				throw new NotSupportedException(
-					string.Format("Unexpected generic enum type in model: {0}, expected non-generic or nullable.", type));
-			}
-			return type.GenericTypeArguments.First();
-		}
-
-		/// <summary>
-		/// Unwraps the type inside a DbSet&lt;&gt;
-		/// </summary>
-		private static Type DbSetType(PropertyInfo dbSet)
-		{
-			return dbSet.PropertyType.GenericTypeArguments.First();
-		}
-
 		internal IList<PropertyInfo> FindDbSets(Type contextType)
 		{
 			return contextType.GetProperties()
