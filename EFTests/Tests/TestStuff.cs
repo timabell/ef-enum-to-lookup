@@ -29,6 +29,7 @@ namespace EFTests.Tests
                 var actual = context.PeskyWabbits.First();
                 Assert.AreEqual("Roger", actual.Name);
                 Assert.AreEqual(Ears.Pointy, actual.TehEars);
+                Assert.AreEqual(1, context.PeskyWabbits.Count()); // spot unwanted re-use of db
             }
         }
     }
