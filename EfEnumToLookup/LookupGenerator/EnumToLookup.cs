@@ -44,7 +44,7 @@ namespace EfEnumToLookup.LookupGenerator
 			AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
 		}
 
-		private void AddForeignKeys(IList<EnumReference> refs, Action<string> runSql)
+		private void AddForeignKeys(IEnumerable<EnumReference> refs, Action<string> runSql)
 		{
 			foreach (var enumReference in refs)
 			{
