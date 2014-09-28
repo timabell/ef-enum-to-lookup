@@ -89,7 +89,7 @@ MERGE INTO [{0}] dst
             foreach (var lookup in enums)
             {
                 runSql(string.Format(
-                    @"CREATE TABLE [{0}] (Id int, Name nvarchar({1}));",
+                    @"CREATE TABLE [{0}] (Id int PRIMARY KEY, Name nvarchar({1}));",
                     TableName(lookup.Name), NameFieldLength));
             }
         }
