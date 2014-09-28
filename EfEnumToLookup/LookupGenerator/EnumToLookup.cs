@@ -164,7 +164,7 @@ MERGE INTO [{0}] dst
 				.ToList();
 		}
 
-		public IList<PropertyInfo> FindEnums(Type type)
+		internal IList<PropertyInfo> FindEnums(Type type)
 		{
 			return type.GetProperties()
 				.Where(p => p.PropertyType.IsEnum
