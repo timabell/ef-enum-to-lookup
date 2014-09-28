@@ -34,13 +34,25 @@ namespace EfEnumToLookup.LookupGenerator
         public void Apply(DbContext context)
         {
             // recurese through dbsets and references finding anything that uses an enum
-            var refs = FindReferences(context.GetType());
+            var enumReferences = FindReferences(context);
             // for the list of enums generate tables
-            var enums = refs.Select(r => r.EnumType).Distinct().ToList();
+            var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
             CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
             // t-sql merge values into table
             PopulateLookups(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
             // add fks from all referencing tables
+            AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
+        }
+
+        private void AddForeignKeys(IList<EnumReference> refs, Action<string> runSql)
+        {
+            foreach (var enumReference in refs)
+            {
+                var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
+                var sql = string.Format(" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);",
+                    fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name));
+                runSql(sql);
+            }
         }
 
         private void PopulateLookups(IEnumerable<Type> enums, Action<string> runSql)
@@ -99,9 +111,9 @@ MERGE INTO [{0}] dst
             return string.Format("{0}{1}", TableNamePrefix, enumName);
         }
 
-        internal IList<EnumReference> FindReferences(Type contextType)
+        internal IList<EnumReference> FindReferences(DbContext context)
         {
-            var dbSets = FindDbSets(contextType);
+            var dbSets = FindDbSets(context.GetType());
             var enumReferences = new List<EnumReference>();
             foreach (var dbSet in dbSets)
             {
@@ -111,7 +123,7 @@ MERGE INTO [{0}] dst
                     .Select(enumProp => new EnumReference
                         {
                             // todo: apply fluent / attribute name changes
-                            ReferencingTable = dbSet.Name,
+                            ReferencingTable = TableNameFinder.GetTableName(dbSetType, context),
                             ReferencingField = enumProp.Name,
                             EnumType = UnwrapIfNullable(enumProp.PropertyType),
                         }

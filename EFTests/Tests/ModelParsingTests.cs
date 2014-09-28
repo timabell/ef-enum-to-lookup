@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.Entity;
+using System.Collections.Generic;
 using System.Linq;
 using EfEnumToLookup.LookupGenerator;
 using EFTests.Db;
@@ -12,28 +12,21 @@ namespace EFTests.Tests
     public class ModelParsingTests
     {
         readonly EnumToLookup _enumToLookup = new EnumToLookup();
-        readonly Type _contextType = typeof(MagicContext);
-
-        [Test]
-        public void FindsDbSet()
-        {
-            var dbSets = _enumToLookup.FindDbSets(_contextType);
-            Assert.AreEqual(1, dbSets.Count);
-            var rabbits = dbSets.First();
-            Assert.AreEqual(typeof(DbSet<Rabbit>), rabbits.PropertyType);
-            Assert.AreEqual("PeskyWabbits", rabbits.Name);
-        }
 
         [Test]
         public void FindsReferences()
         {
-            var refs = _enumToLookup.FindReferences(_contextType);
-            Assert.AreEqual(2, refs.Count);
-            var legs = refs.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
+            IList<EnumReference> references;
+            using (var context = new MagicContext())
+            {
+                references = _enumToLookup.FindReferences(context);
+            }
+            Assert.AreEqual(2, references.Count);
+            var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
             Assert.IsNotNull(legs, "SpeedyLegs ref not found");
-            var ears = refs.SingleOrDefault(r => r.ReferencingField == "TehEars");
+            var ears = references.SingleOrDefault(r => r.ReferencingField == "TehEars");
             Assert.IsNotNull(ears, "TehEars ref not found");
-            Assert.IsTrue(refs.All(r => r.EnumType.IsEnum), "Non-enum type found");
+            Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
         }
 
         [Test]

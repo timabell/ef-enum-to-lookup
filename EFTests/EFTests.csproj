@@ -50,12 +50,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Db\MagicContext.cs" />
+    <Compile Include="Model\Chicken.cs" />
     <Compile Include="Model\Ears.cs" />
+    <Compile Include="Model\Fox.cs" />
     <Compile Include="Model\Legs.cs" />
     <Compile Include="Model\Rabbit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Db\TestInitializer.cs" />
     <Compile Include="Tests\ModelParsingTests.cs" />
+    <Compile Include="Tests\NameFinderTests.cs" />
     <Compile Include="Tests\TestStuff.cs" />
   </ItemGroup>
   <ItemGroup>
