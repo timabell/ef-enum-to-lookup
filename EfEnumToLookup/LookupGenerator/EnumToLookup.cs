@@ -14,6 +14,18 @@ using System.Text.RegularExpressions;
 
 namespace EfEnumToLookup.LookupGenerator
 {
+	/// <summary>
+	/// Makes up for a missing feature in Entity Framework 6.1
+	/// Creates lookup tables and foreign key constraints based on the enums
+	/// used in your model.
+	/// Use the properties exposed to control behaviour.
+	/// Run <c>Apply</c> from your Seed method in either your database initializer
+	/// or your EF Migrations.
+	/// It is safe to run repeatedly, and will ensure enum values are kept in line
+	/// with your current code.
+	/// Source code: https://github.com/timabell/ef-enum-to-lookup
+	/// License: MIT
+	/// </summary>
 	public class EnumToLookup : IEnumToLookup
 	{
 		public EnumToLookup()
