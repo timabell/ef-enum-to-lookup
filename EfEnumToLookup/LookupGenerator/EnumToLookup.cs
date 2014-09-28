@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 [assembly: InternalsVisibleTo("EFTests")]
 
@@ -35,10 +36,52 @@ namespace EfEnumToLookup.LookupGenerator
             // recurese through dbsets and references finding anything that uses an enum
             var refs = FindReferences(context.GetType());
             // for the list of enums generate tables
-            var enums = refs.Select(r => r.EnumType).Distinct();
+            var enums = refs.Select(r => r.EnumType).Distinct().ToList();
             CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
             // t-sql merge values into table
+            PopulateLookups(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
             // add fks from all referencing tables
+        }
+
+        private void PopulateLookups(IEnumerable<Type> enums, Action<string> runSql)
+        {
+            foreach (var lookup in enums)
+            {
+                PopulateLookup(lookup, runSql);
+            }
+        }
+
+        private void PopulateLookup(Type lookup, Action<string> runSql)
+        {
+            if (!lookup.IsEnum)
+            {
+                throw new ArgumentException("Lookup type must be an enum", "lookup");
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}));", NameFieldLength));
+            foreach (var value in Enum.GetValues(lookup))
+            {
+                var id = (int)value;
+                var name = value.ToString();
+                sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, '{1}');", id, name));
+            }
+
+            sb.AppendLine(string.Format(@"
+MERGE INTO [{0}] dst
+	USING #lookups src ON src.Id = dst.Id
+	WHEN MATCHED AND src.Name <> dst.Name THEN
+		UPDATE SET Name = src.Name
+	WHEN NOT MATCHED THEN
+		INSERT (Id, Name)
+		VALUES (src.Id, src.Name)
+	WHEN NOT MATCHED BY SOURCE THEN
+		DELETE
+;"
+                , TableName(lookup.Name)));
+
+            sb.AppendLine("DROP TABLE #lookups;");
+            runSql(sb.ToString());
         }
 
         private void CreateTables(IEnumerable<Type> enums, Action<string> runSql)
@@ -46,9 +89,14 @@ namespace EfEnumToLookup.LookupGenerator
             foreach (var lookup in enums)
             {
                 runSql(string.Format(
-                    @"CREATE TABLE [{0}{1}] (Id int, Name nvarchar({2}));",
-                    TableNamePrefix, lookup.Name, NameFieldLength));
+                    @"CREATE TABLE [{0}] (Id int, Name nvarchar({1}));",
+                    TableName(lookup.Name), NameFieldLength));
             }
+        }
+
+        private string TableName(string enumName)
+        {
+            return string.Format("{0}{1}", TableNamePrefix, enumName);
         }
 
         internal IList<EnumReference> FindReferences(Type contextType)
