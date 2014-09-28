@@ -1,7 +1,7 @@
 ﻿namespace EFTests.Model
 {
-    public class Fox
-    {
-        public int Id { get; set; }
-    }
+	public class Fox
+	{
+		public int Id { get; set; }
+	}
 }
