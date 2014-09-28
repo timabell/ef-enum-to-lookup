@@ -1,4 +1,5 @@
-﻿using EfEnumToLookup.LookupGenerator;
+﻿using System.Data.Entity;
+using EfEnumToLookup.LookupGenerator;
 using EFTests.Db;
 using EFTests.Model;
 using NUnit.Framework;
@@ -8,6 +9,12 @@ namespace EFTests.Tests
     [TestFixture]
     public class NameFinderTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            Database.SetInitializer(new TestInitializer());
+        }
+
         [Test]
         public void MapsPluralisedName()
         {

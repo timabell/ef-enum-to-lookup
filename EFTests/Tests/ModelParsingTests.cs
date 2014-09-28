@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using EfEnumToLookup.LookupGenerator;
 using EFTests.Db;
@@ -12,6 +12,12 @@ namespace EFTests.Tests
     public class ModelParsingTests
     {
         readonly EnumToLookup _enumToLookup = new EnumToLookup();
+        [SetUp]
+        public void SetUp()
+        {
+            Database.SetInitializer(new TestInitializer());
+        }
+
 
         [Test]
         public void FindsReferences()
