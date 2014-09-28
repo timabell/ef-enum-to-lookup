@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace EFTests.Model
 {
 	public class Warren
@@ -8,5 +10,7 @@ namespace EFTests.Model
 		public int CaveId { get; set; }
 
 		public Heat? HowHot { get; set; }
+
+		public ICollection<Aspirations> HopesAndDreams { get; set; }
 	}
 }

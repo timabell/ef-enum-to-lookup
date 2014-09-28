@@ -49,10 +49,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Aspirations.cs" />
     <Compile Include="Model\Cave.cs" />
     <Compile Include="Db\MagicContext.cs" />
     <Compile Include="Model\Echo.cs" />
     <Compile Include="Model\Heat.cs" />
+    <Compile Include="Model\Importance.cs" />
     <Compile Include="Model\Warren.cs" />
     <Compile Include="Model\Chicken.cs" />
     <Compile Include="Model\Ears.cs" />
