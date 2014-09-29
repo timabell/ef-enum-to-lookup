@@ -32,5 +32,6 @@ Creates lookup tables and foreign key constraints based on the enums used in you
     <files>
         <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.dll" target="lib\net45\EfEnumToLookup.dll" />
         <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.pdb" target="lib\net45\EfEnumToLookup.pdb" />
+        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.XML" target="lib\net45\EfEnumToLookup.XML" />
     </files>
 </package>
