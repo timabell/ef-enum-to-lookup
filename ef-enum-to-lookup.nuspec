@@ -6,7 +6,7 @@
         <title>Enum Lookup Table Generator for Entity Framework 6</title>
         <authors>Tim Abell</authors>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
-        <projectUrl>http://www.nuget.org/packages/ef-enum-to-lookup</projectUrl>
+        <projectUrl>http://github.com/timabell/ef-enum-to-lookup</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Entity Framework 6.1 Enum Lookup Table Generator
 
