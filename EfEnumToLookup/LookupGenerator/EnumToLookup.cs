@@ -51,6 +51,13 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		public string TableNamePrefix { get; set; }
 
+		/// <summary>
+		/// Create any missing lookup tables,
+		/// enforce values in the lookup tables
+		/// by way of a T-SQL MERGE
+		/// </summary>
+		/// <param name="context">EF Database context to search for enum references,
+		///  context.Database.ExecuteSqlCommand() is used to apply changes.</param>
 		public void Apply(DbContext context)
 		{
 			// recurese through dbsets and references finding anything that uses an enum
