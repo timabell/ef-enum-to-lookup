@@ -128,7 +128,7 @@ MERGE INTO [{0}] dst
 			foreach (var lookup in enums)
 			{
 				runSql(string.Format(
-					@"CREATE TABLE [{0}] (Id int PRIMARY KEY, Name nvarchar({1}));",
+					@"IF OBJECT_ID('{0}', 'U') IS NULL CREATE TABLE [{0}] (Id int PRIMARY KEY, Name nvarchar({1}));",
 					TableName(lookup.Name), NameFieldLength));
 			}
 		}
