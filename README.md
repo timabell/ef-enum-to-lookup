@@ -25,8 +25,8 @@ Use the properties exposed to control behaviour.
 It is safe to run repeatedly (Idempotent), and will ensure enum values are kept in line
 with your current code if run regularly (e.g. in the migration seed method). 
 
-For example usage see [ExampleUsage/EnumExample.cs](ExampleUsage/EnumExample.cs), which can be run in a test
-project if you want to see it in action.
+For example usage see [ExampleUsage/EnumExample.cs](ExampleUsage/EnumExample.cs), which
+can be run in the test project project "[ExampleUsage](ExampleUsage)" if you want to see it in action.
 
 	var enumToLookup = new EnumToLookup();
 	enumToLookup.NameFieldLength = 42; // optional, example of how to override default values
