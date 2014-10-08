@@ -164,7 +164,7 @@ MERGE INTO [{0}] dst
 					}).ToList();
 		}
 
-		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
+		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
 		{
 			// bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
 			// refs:
@@ -173,13 +173,16 @@ MERGE INTO [{0}] dst
 			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
 
 			// Get the entity type from the model that maps to the CLR type
-			var entityType = metadata
+			var entityTypes = metadata
 				.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
-				.Where(e => e == entity);
-			if (entityType == null)
+				.Where(e => e == entityType)
+				.ToList();
+			if (entityTypes.Count() > 1)
 			{
-				throw new EnumGeneratorException("Multiple entities of this type found in mapping. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+				throw new EnumGeneratorException(string.Format("Multiple entities of type {0} found in mapping.", entityType));
 			}
+			var entityMetadata = entityTypes.Single();
+
 			// Get the entity set that uses this entity type
 			var containers = metadata
 				.GetItems<EntityContainer>(DataSpace.CSpace) // CSpace = Conceptual Space
@@ -190,7 +193,7 @@ MERGE INTO [{0}] dst
 			}
 			var entitySet = containers
 				.EntitySets
-				.Single(s => s.ElementType.Name == entityType.Name);
+				.Single(s => s.ElementType.Name == entityMetadata.Name);
 			if (entitySet == null)
 			{
 				throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
