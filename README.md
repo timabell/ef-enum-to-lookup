@@ -36,3 +36,14 @@ Contributing
 ------------
 
 Feedback, bug reports, pull requests all welcome, head over to github.
+
+Repository
+----------
+
+Files stored as LF, converted on checkout to windows, configure locally with
+
+    git config core.autocrlf true
+
+
+I've looked into the .gitattributes approach to this and it doesn't seem to have
+the desired effect on a windows checkout.
