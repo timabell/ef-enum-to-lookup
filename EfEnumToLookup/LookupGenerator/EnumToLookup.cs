@@ -180,6 +180,7 @@ MERGE INTO [{0}] dst
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
 		{
+            // bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
             // refs:
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
             // * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
