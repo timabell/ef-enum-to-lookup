@@ -3,6 +3,10 @@ using System.Diagnostics;
 
 namespace EfEnumToLookup.LookupGenerator
 {
+	/// <summary>
+	/// Information needed to construct a foreign key from a referencing
+	/// table to a generated enum lookup.
+	/// </summary>
 	[DebuggerDisplay("{DebuggerDisplay,nq}")]
 	internal class EnumReference
 	{
