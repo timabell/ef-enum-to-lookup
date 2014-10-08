@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LookupGenerator\EnumGeneratorException.cs" />
     <Compile Include="LookupGenerator\EnumToLookup.cs" />
     <Compile Include="LookupGenerator\IEnumToLookup.cs" />
     <Compile Include="LookupGenerator\EnumReference.cs" />
