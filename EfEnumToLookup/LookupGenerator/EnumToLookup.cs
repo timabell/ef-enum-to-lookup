@@ -147,54 +147,54 @@ MERGE INTO [{0}] dst
 
 		internal IList<EnumReference> FindReferences(DbContext context)
 		{
-		    var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
+			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
-		    // find and return all the references to enum types
-		    return (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
-		        from property in entity.Properties
-		        where property.IsEnumType
-		        select new EnumReference
-		        {
-		            ReferencingTable = GetTableName(metadata, entity),
-                    ReferencingField = property.Name,
-                    EnumType = objectItemCollection.GetClrType(property.EnumType),
-		        }).ToList();
+			// find and return all the references to enum types
+			return (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
+					from property in entity.Properties
+					where property.IsEnumType
+					select new EnumReference
+					{
+						ReferencingTable = GetTableName(metadata, entity),
+						ReferencingField = property.Name,
+						EnumType = objectItemCollection.GetClrType(property.EnumType),
+					}).ToList();
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
 		{
-            // bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
-            // refs:
+			// bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
+			// refs:
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
-            // * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
-            // * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
+			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
 
 			// Get the entity type from the model that maps to the CLR type
 			var entityType = metadata
-                .GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
+				.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
 				.Where(e => e == entity);
-		    if (entityType == null)
-		    {
-                throw new EnumGeneratorException("Multiple entities of this type found in mapping. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
-		    }
+			if (entityType == null)
+			{
+				throw new EnumGeneratorException("Multiple entities of this type found in mapping. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+			}
 			// Get the entity set that uses this entity type
-		    var containers = metadata
-		        .GetItems<EntityContainer>(DataSpace.CSpace) // CSpace = Conceptual Space
-		        .Single();
-		    if (containers == null)
-		    {
-                throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
-		    }
-            var entitySet = containers
+			var containers = metadata
+				.GetItems<EntityContainer>(DataSpace.CSpace) // CSpace = Conceptual Space
+				.Single();
+			if (containers == null)
+			{
+				throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+			}
+			var entitySet = containers
 				.EntitySets
 				.Single(s => s.ElementType.Name == entityType.Name);
-		    if (entitySet == null)
-		    {
-                throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
-		    }
+			if (entitySet == null)
+			{
+				throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+			}
 			// Find the mapping between conceptual and storage model for this entity set
 			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace) // CSSpace = Conceptual model to Storage model mappings
 				.Single()
