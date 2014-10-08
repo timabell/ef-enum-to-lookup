@@ -151,7 +151,7 @@ MERGE INTO [{0}] dst
 			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
 			// Get the part of the model that contains info about the actual CLR types
-			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));
+			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
 			// Get the entity type from the model that maps to the CLR type
 			var entityTypes = metadata
