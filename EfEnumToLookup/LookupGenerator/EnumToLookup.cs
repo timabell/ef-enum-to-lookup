@@ -156,7 +156,7 @@ MERGE INTO [{0}] dst
 			// Get the entity type from the model that maps to the CLR type
 			var entityTypes = metadata
 				.GetItems<EntityType>(DataSpace.OSpace);
-			//var entitiesWithEnums = entityTypes.Where(e => e.Properties.Any(p => p.IsEnumType));
+
 			foreach (var entity in entityTypes)
 			{
 				var tableName = GetTableName(metadata, entity);
