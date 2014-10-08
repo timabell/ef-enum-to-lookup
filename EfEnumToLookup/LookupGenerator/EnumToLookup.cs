@@ -193,9 +193,17 @@ MERGE INTO [{0}] dst
 		    var containers = metadata
 		        .GetItems<EntityContainer>(DataSpace.CSpace)
 		        .Single();
+		    if (containers == null)
+		    {
+                throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+		    }
             var entitySet = containers
 				.EntitySets
 				.Single(s => s.ElementType.Name == entityType.Name);
+		    if (entitySet == null)
+		    {
+                throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+		    }
 			// Find the mapping between conceptual and storage model for this entity set
 			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace)
 				.Single()
