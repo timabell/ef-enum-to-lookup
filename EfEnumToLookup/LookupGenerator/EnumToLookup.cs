@@ -163,16 +163,18 @@ MERGE INTO [{0}] dst
 
 				foreach (var property in entity.Properties)
 				{
-					if (property.IsEnumType)
-					{
-						var clrType = objectItemCollection.GetClrType(property.EnumType);
-						enumReferences.Add(new EnumReference
-						{
-							ReferencingTable = tableName,
-							ReferencingField = property.Name,
-							EnumType = clrType,
-						});
-					}
+				    if (!property.IsEnumType)
+				    {
+				        continue;
+				    }
+
+				    var clrType = objectItemCollection.GetClrType(property.EnumType);
+				    enumReferences.Add(new EnumReference
+				    {
+				        ReferencingTable = tableName,
+				        ReferencingField = property.Name,
+				        EnumType = clrType,
+				    });
 				}
 			}
 			return enumReferences;
