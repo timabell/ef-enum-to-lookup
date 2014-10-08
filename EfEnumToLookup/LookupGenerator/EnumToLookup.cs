@@ -184,11 +184,16 @@ MERGE INTO [{0}] dst
 			// Get the entity type from the model that maps to the CLR type
 			var entityType = metadata
 				.GetItems<EntityType>(DataSpace.OSpace)
-				.Single(e => e == entity);
+				.SingleOrDefault(e => e == entity);
+		    if (entityType == null)
+		    {
+                throw new EnumGeneratorException("Multiple entities of this type found in mapping. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
+		    }
 			// Get the entity set that uses this entity type
-			var entitySet = metadata
-				.GetItems<EntityContainer>(DataSpace.CSpace)
-				.Single()
+		    var containers = metadata
+		        .GetItems<EntityContainer>(DataSpace.CSpace)
+		        .Single();
+            var entitySet = containers
 				.EntitySets
 				.Single(s => s.ElementType.Name == entityType.Name);
 			// Find the mapping between conceptual and storage model for this entity set
