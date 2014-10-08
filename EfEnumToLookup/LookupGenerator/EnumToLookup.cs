@@ -180,18 +180,22 @@ MERGE INTO [{0}] dst
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
 		{
-			// http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+            // refs:
+			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+            // * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
+            // * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+
 			// Get the entity type from the model that maps to the CLR type
 			var entityType = metadata
-				.GetItems<EntityType>(DataSpace.OSpace)
-				.SingleOrDefault(e => e == entity);
+                .GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
+				.Where(e => e == entity);
 		    if (entityType == null)
 		    {
                 throw new EnumGeneratorException("Multiple entities of this type found in mapping. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
 		    }
 			// Get the entity set that uses this entity type
 		    var containers = metadata
-		        .GetItems<EntityContainer>(DataSpace.CSpace)
+		        .GetItems<EntityContainer>(DataSpace.CSpace) // CSpace = Conceptual Space
 		        .Single();
 		    if (containers == null)
 		    {
@@ -205,7 +209,7 @@ MERGE INTO [{0}] dst
                 throw new EnumGeneratorException("Multiple EntityContainer's found. Please file an issue on github. https://github.com/timabell/ef-enum-to-lookup/issues");
 		    }
 			// Find the mapping between conceptual and storage model for this entity set
-			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace)
+			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace) // CSSpace = Conceptual model to Storage model mappings
 				.Single()
 				.EntitySetMappings
 				.Single(s => s.EntitySet == entitySet);
