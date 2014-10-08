@@ -28,14 +28,16 @@ namespace EFTests.Tests
 			{
 				references = _enumToLookup.FindReferences(context);
 			}
-			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
-			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
+			var frontLegs = references.SingleOrDefault(r => r.ReferencingField == "FrontLegs");
+			Assert.IsNotNull(frontLegs, "FrontLegs ref not found");
+			var backLegs = references.SingleOrDefault(r => r.ReferencingField == "BackLegs");
+			Assert.IsNotNull(backLegs, "BackLegs ref not found");
 			var ears = references.SingleOrDefault(r => r.ReferencingField == "TehEars");
 			Assert.IsNotNull(ears, "TehEars ref not found");
 			var echos = references.SingleOrDefault(r => r.ReferencingField == "EchoType");
 			Assert.IsNotNull(echos, "EchoType ref not found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
-			Assert.AreEqual(5, references.Count);
+			Assert.AreEqual(6, references.Count);
 		}
 
 		[Test]
@@ -51,7 +53,7 @@ namespace EFTests.Tests
 		public void FindsNullableEnumOnDbSet()
 		{
 			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
-			var prop = enums.SingleOrDefault(p => p.Name == "SpeedyLegs");
+			var prop = enums.SingleOrDefault(p => p.Name == "FrontLegs");
 			Assert.IsNotNull(prop, "Enum property not found");
 			Assert.AreEqual(typeof (Legs?), prop.PropertyType);
 		}

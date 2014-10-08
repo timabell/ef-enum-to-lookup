@@ -8,6 +8,8 @@
 
 		public Ears TehEars { get; set; }
 
-		public Legs? SpeedyLegs { get; set; }
+		public Legs? FrontLegs { get; set; }
+
+		public Legs? BackLegs { get; set; }
 	}
 }
