@@ -55,7 +55,16 @@ namespace ExampleUsage
 	public enum Size
 	{
 		Small = 1, //db friendly id
+
 		Medium,
-		ReallyVeryBig
+
+		ReallyVeryBig,
+
+		// this is only fully qualified because of a name clash with NUnit, you wouldn't normally need to.
+		[System.ComponentModel.Description("Huge you know?")] // give it a different name in the lookup table
+		Huge,
+
+		[RuntimeOnly] // this won't exist in the database, handy to prevent unwanted data creeping in (enforced by foreign key constraint).
+		Undecided
 	}
 }
