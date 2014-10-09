@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>ef-enum-to-lookup</id>
-        <version>1.1.1</version>
+        <version>1.2.0</version>
         <title>Enum Lookup Table Generator for Entity Framework 6</title>
         <authors>Tim Abell</authors>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -19,7 +19,13 @@ See the project site on github at http://github.com/timabell/ef-enum-to-lookup f
         <summary>Entity Framework 6.1 Enum Lookup Table Generator
 
 Creates lookup tables and foreign key constraints based on the enums used in your model.</summary>
-        <releaseNotes>First release</releaseNotes>
+        <releaseNotes>Extra features added, some refactoring of code.
+
+* Adding `[RuntimeOnly]` attribute to an enum value will now cause it to be excluded
+  from the lookup table.
+* The text from a `[Description("Long name here")]` attribute will be used for the name
+  field of the lookup table if added to an enum value.
+</releaseNotes>
         <copyright>Tim Abell</copyright>
         <language>en-GB</language>
     </metadata>
