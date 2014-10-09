@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
@@ -108,12 +109,7 @@ namespace EfEnumToLookup.LookupGenerator
 					continue;
 				}
 				var id = (int)value;
-				var name = value.ToString();
-				if (SplitWords)
-				{
-					// http://stackoverflow.com/questions/773303/splitting-camelcase/25876326#25876326
-					name = Regex.Replace(name, "(?<=[a-z])([A-Z])", " $1", RegexOptions.Compiled);
-				}
+				var name = EnumName(value, lookup);
 				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, '{1}');", id, name));
 			}
 
@@ -132,6 +128,38 @@ MERGE INTO [{0}] dst
 
 			sb.AppendLine("DROP TABLE #lookups;");
 			runSql(sb.ToString());
+		}
+
+		private string EnumName(object value, Type lookup)
+		{
+			var description = DescriptionValue(value, lookup);
+			if (description != null)
+			{
+				return description;
+			}
+
+			var name = value.ToString();
+
+			if (SplitWords)
+			{
+				return SplitCamelCase(name);
+			}
+			return name;
+		}
+
+		private static string SplitCamelCase(string name)
+		{
+			// http://stackoverflow.com/questions/773303/splitting-camelcase/25876326#25876326
+			name = Regex.Replace(name, "(?<=[a-z])([A-Z])", " $1", RegexOptions.Compiled);
+			return name;
+		}
+
+		private string DescriptionValue(object value, Type enumType)
+		{
+			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
+			var member = enumType.GetMember(value.ToString()).First();
+			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
+			return description == null ? null : description.Description;
 		}
 
 		private bool IsRuntimeOnly(object value, Type enumType)

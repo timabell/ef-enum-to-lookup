@@ -49,5 +49,19 @@ namespace EFTests.Tests
 				Assert.AreEqual(0, matches, string.Format("Runtime only value '{1}' shouldn't be in db. Enum_Ears id {0}", prototypeId, Ears.Prototype));
 			}
 		}
+
+		[Test]
+		public void UsesDescriptionAttribute()
+		{
+			using (var context = new MagicContext())
+			{
+				const string sql = "select @desciption = name from Enum_Importance where id = @id";
+				var idParam = new SqlParameter("id", (int)Importance.NotBovverd);
+				var outParam = new SqlParameter("desciption", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
+				context.Database.ExecuteSqlCommand(sql, idParam, outParam);
+				var actualName = outParam.Value;
+				Assert.AreEqual(Constants.BovveredDisplay, actualName);
+			}
+		}
 	}
 }
