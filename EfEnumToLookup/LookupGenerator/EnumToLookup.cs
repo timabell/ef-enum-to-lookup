@@ -150,7 +150,7 @@ MERGE INTO [{0}] dst
 			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
 			// Get the part of the model that contains info about the actual CLR types
-			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));
+			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
 			// find and return all the references to enum types
 			return (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
@@ -166,10 +166,15 @@ MERGE INTO [{0}] dst
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
 		{
-			// http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+			// bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
+			// refs:
+			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
+			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+
 			// Get the entity type from the model that maps to the CLR type
 			var entityType = metadata
-				.GetItems<EntityType>(DataSpace.OSpace)
+				.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
 				.Single(e => e == entity);
 			// Get the entity set that uses this entity type
 			var entitySet = metadata
@@ -178,7 +183,7 @@ MERGE INTO [{0}] dst
 				.EntitySets
 				.Single(s => s.ElementType.Name == entityType.Name);
 			// Find the mapping between conceptual and storage model for this entity set
-			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace)
+			var mapping = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace) // CSSpace = Conceptual model to Storage model mappings
 				.Single()
 				.EntitySetMappings
 				.Single(s => s.EntitySet == entitySet);
