@@ -1,4 +1,6 @@
-﻿using System.Data.Entity;
+﻿using System.Data;
+using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using EFTests.Db;
 using EFTests.Model;
@@ -15,7 +17,7 @@ namespace EFTests.Tests
 			Database.SetInitializer(new TestInitializer());
 			using (var context = new MagicContext())
 			{
-				var roger = new Rabbit {Name = "Roger", TehEars = Ears.Pointy};
+				var roger = new Rabbit { Name = "Roger", TehEars = Ears.Pointy };
 				context.PeskyWabbits.Add(roger);
 				context.SaveChanges();
 			}
@@ -30,6 +32,21 @@ namespace EFTests.Tests
 				Assert.AreEqual("Roger", actual.Name);
 				Assert.AreEqual(Ears.Pointy, actual.TehEars);
 				Assert.AreEqual(1, context.PeskyWabbits.Count()); // spot unwanted re-use of db
+			}
+		}
+
+		[Test]
+		public void IgnoresRuntimeValues()
+		{
+			using (var context = new MagicContext())
+			{
+				const int prototypeId = (int)Ears.Prototype;
+				const string sql = "select @count = count(*) from Enum_Ears where id = @id";
+				var idParam = new SqlParameter("id", prototypeId);
+				var outParam = new SqlParameter("count", SqlDbType.Int) { Direction = ParameterDirection.Output };
+				context.Database.ExecuteSqlCommand(sql, idParam, outParam);
+				var matches = outParam.Value;
+				Assert.AreEqual(0, matches, string.Format("Runtime only value '{1}' shouldn't be in db. Enum_Ears id {0}", prototypeId, Ears.Prototype));
 			}
 		}
 	}

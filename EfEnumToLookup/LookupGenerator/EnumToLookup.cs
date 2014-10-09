@@ -103,6 +103,10 @@ namespace EfEnumToLookup.LookupGenerator
 			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}));", NameFieldLength));
 			foreach (var value in Enum.GetValues(lookup))
 			{
+				if (IsRuntimeOnly(value, lookup))
+				{
+					continue;
+				}
 				var id = (int)value;
 				var name = value.ToString();
 				if (SplitWords)
@@ -128,6 +132,13 @@ MERGE INTO [{0}] dst
 
 			sb.AppendLine("DROP TABLE #lookups;");
 			runSql(sb.ToString());
+		}
+
+		private bool IsRuntimeOnly(object value, Type enumType)
+		{
+			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
+			var member = enumType.GetMember(value.ToString()).First();
+			return member.GetCustomAttributes(typeof(RuntimeOnlyAttribute)).Any();
 		}
 
 		private void CreateTables(IEnumerable<Type> enums, Action<string> runSql)

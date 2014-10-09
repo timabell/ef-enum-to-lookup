@@ -57,6 +57,7 @@
     <Compile Include="LookupGenerator\EnumToLookup.cs" />
     <Compile Include="LookupGenerator\IEnumToLookup.cs" />
     <Compile Include="LookupGenerator\EnumReference.cs" />
+    <Compile Include="LookupGenerator\RuntimeOnlyAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
