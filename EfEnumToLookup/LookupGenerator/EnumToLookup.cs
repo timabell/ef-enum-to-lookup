@@ -147,35 +147,21 @@ MERGE INTO [{0}] dst
 
 		internal IList<EnumReference> FindReferences(DbContext context)
 		{
-			var enumReferences = new List<EnumReference>();
 			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));
 
-			// Get the entity type from the model that maps to the CLR type
-			var entityTypes = metadata
-				.GetItems<EntityType>(DataSpace.OSpace);
-
-			foreach (var entity in entityTypes)
-			{
-				var tableName = GetTableName(metadata, entity);
-
-				foreach (var property in entity.Properties)
-				{
-					if (property.IsEnumType)
+			// find and return all the references to enum types
+			return (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
+					from property in entity.Properties
+					where property.IsEnumType
+					select new EnumReference
 					{
-						var clrType = objectItemCollection.GetClrType(property.EnumType);
-						enumReferences.Add(new EnumReference
-						{
-							ReferencingTable = tableName,
-							ReferencingField = property.Name,
-							EnumType = clrType,
-						});
-					}
-				}
-			}
-			return enumReferences;
+						ReferencingTable = GetTableName(metadata, entity),
+						ReferencingField = property.Name,
+						EnumType = objectItemCollection.GetClrType(property.EnumType),
+					}).ToList();
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entity)
