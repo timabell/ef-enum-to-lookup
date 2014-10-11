@@ -217,7 +217,7 @@ MERGE INTO [{0}] dst
 				.Single(e => e == entity);
 			// Get the entity set that uses this entity type
 			var entitySet = metadata
-				.GetItems<EntityContainer>(DataSpace.CSpace)
+				.GetItems<EntityContainer>(DataSpace.CSpace) // CSpace = Conceptual model
 				.Single()
 				.EntitySets
 				.Single(s => s.ElementType.Name == entityType.Name);
