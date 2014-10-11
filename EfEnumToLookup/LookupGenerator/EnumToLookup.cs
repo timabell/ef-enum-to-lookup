@@ -211,69 +211,76 @@ MERGE INTO [{0}] dst
 			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
 			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
 
-			// Get the entity type from the model that maps to the CLR type
-			var entityTypes = metadata
-				.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
-				.Where(e => e == entityType)
-				.ToList();
-			if (entityTypes.Count() > 1)
+			try
 			{
-				throw new EnumGeneratorException(string.Format("Multiple entities of type {0} found in mapping.", entityType));
-			}
-			var entityMetadata = entityTypes.Single();
+				// Get the entity type from the model that maps to the CLR type
+				var entityTypes = metadata
+					.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
+					.Where(e => e == entityType)
+					.ToList();
+				if (entityTypes.Count() > 1)
+				{
+					throw new EnumGeneratorException(string.Format("Multiple entities of type {0} found in mapping.", entityType));
+				}
+				var entityMetadata = entityTypes.Single();
 
-			// Get the entity set that uses this entity type
-			var containers = metadata
-				.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
-			if (containers.Count() > 1)
-			{
-				throw new EnumGeneratorException("Multiple EntityContainer's found.");
-			}
-			var container = containers.Single();
+				// Get the entity set that uses this entity type
+				var containers = metadata
+					.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
+				if (containers.Count() > 1)
+				{
+					throw new EnumGeneratorException("Multiple EntityContainer's found.");
+				}
+				var container = containers.Single();
 
-			var entitySets = container
-				.EntitySets
-				.Where(s => s.ElementType.Name == entityMetadata.Name)
-				.ToList();
-			if (entitySets.Count() > 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"Multiple EntitySet's found for element type '{0}'.",
-					entityMetadata.Name));
-			}
-			var entitySet = entitySets.Single();
+				var entitySets = container
+					.EntitySets
+					.Where(s => s.ElementType.Name == entityMetadata.Name)
+					.ToList();
+				if (entitySets.Count() > 1)
+				{
+					throw new EnumGeneratorException(string.Format(
+						"Multiple EntitySet's found for element type '{0}'.",
+						entityMetadata.Name));
+				}
+				var entitySet = entitySets.Single();
 
-			// Find the mapping between conceptual and storage model for this entity set
-			var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace); // CSSpace = Conceptual model to Storage model mappings
-			if (entityContainerMappings.Count() > 1)
-			{
-				throw new EnumGeneratorException("Multiple EntityContainerMapping's found.");
-			}
-			var containerMapping = entityContainerMappings.Single();
-			var mappings = containerMapping.EntitySetMappings.Where(s => s.EntitySet == entitySet).ToList();
-			if (mappings.Count() > 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"Multiple EntitySetMappings found for entitySet '{0}'.",
-					entitySet.Name));
-			}
-			var mapping = mappings.Single();
+				// Find the mapping between conceptual and storage model for this entity set
+				var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace); // CSSpace = Conceptual model to Storage model mappings
+				if (entityContainerMappings.Count() > 1)
+				{
+					throw new EnumGeneratorException("Multiple EntityContainerMapping's found.");
+				}
+				var containerMapping = entityContainerMappings.Single();
+				var mappings = containerMapping.EntitySetMappings.Where(s => s.EntitySet == entitySet).ToList();
+				if (mappings.Count() > 1)
+				{
+					throw new EnumGeneratorException(string.Format(
+						"Multiple EntitySetMappings found for entitySet '{0}'.",
+						entitySet.Name));
+				}
+				var mapping = mappings.Single();
 
-			// Find the storage entity set (table) that the entity is mapped to
-			var entityTypeMappings = mapping.EntityTypeMappings;
-			if (entityTypeMappings.Count() > 1)
-			{
-				throw new EnumGeneratorException("Multiple EntityTypeMappings found.");
+				// Find the storage entity set (table) that the entity is mapped to
+				var entityTypeMappings = mapping.EntityTypeMappings;
+				if (entityTypeMappings.Count() > 1)
+				{
+					throw new EnumGeneratorException("Multiple EntityTypeMappings found.");
+				}
+				var entityTypeMapping = entityTypeMappings.Single();
+				var fragments = entityTypeMapping.Fragments;
+				if (fragments.Count() > 1)
+				{
+					throw new EnumGeneratorException("Multiple Fragments found.");
+				}
+				var table = fragments.Single().StoreEntitySet;
+				var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name;
+				return tableName;
 			}
-			var entityTypeMapping = entityTypeMappings.Single();
-			var fragments = entityTypeMapping.Fragments;
-			if (fragments.Count() > 1)
+			catch (Exception exception)
 			{
-				throw new EnumGeneratorException("Multiple Fragments found.");
+				throw new EnumGeneratorException(string.Format("Error getting table name for entity type '{0}'", entityType.Name), exception);
 			}
-			var table = fragments.Single().StoreEntitySet;
-			var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name;
-			return tableName;
 		}
 
 		internal IList<PropertyInfo> FindDbSets(Type contextType)
