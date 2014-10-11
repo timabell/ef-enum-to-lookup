@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\AbstractBase.cs" />
+    <Compile Include="Model\DerivedTwo.cs" />
+    <Compile Include="Model\DerivedOne.cs" />
     <Compile Include="Model\Aspirations.cs" />
     <Compile Include="Model\Cave.cs" />
     <Compile Include="Db\MagicContext.cs" />

@@ -14,6 +14,10 @@ namespace EFTests.Db
 
 		public DbSet<Fox> CunningFoxes { get; set; }
 
+		public DbSet<DerivedOne> DerivedOnes { get; set; } 
+
+		public DbSet<DerivedTwo> DerivedTwos { get; set; } 
+
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<Fox>().Map(f => f.ToTable("Foxies"));
