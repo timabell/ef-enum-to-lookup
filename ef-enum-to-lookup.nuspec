@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>ef-enum-to-lookup</id>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
         <title>Enum Lookup Table Generator for Entity Framework 6</title>
         <authors>Tim Abell</authors>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -19,10 +19,9 @@ See the project site on github at http://github.com/timabell/ef-enum-to-lookup f
         <summary>Entity Framework 6.1 Enum Lookup Table Generator
 
 Creates lookup tables and foreign key constraints based on the enums used in your model.</summary>
-        <releaseNotes>Better error output for model-schema name mapping code.
-
-Trying to get to the bottom of https://github.com/timabell/ef-enum-to-lookup/issues/7 - if you can reproduce
-this then please do help me out with a stack trace! And better still what it is about the model that causes it.
+        <releaseNotes>Fix for collation issues with tempdb
+		
+		https://github.com/timabell/ef-enum-to-lookup/issues/12
 </releaseNotes>
         <copyright>Tim Abell</copyright>
         <language>en-GB</language>
