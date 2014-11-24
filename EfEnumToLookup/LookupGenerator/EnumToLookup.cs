@@ -101,7 +101,7 @@ namespace EfEnumToLookup.LookupGenerator
 			}
 
 			var sb = new StringBuilder();
-			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}));", NameFieldLength));
+			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
 			foreach (var value in Enum.GetValues(lookup))
 			{
 				if (IsRuntimeOnly(value, lookup))
