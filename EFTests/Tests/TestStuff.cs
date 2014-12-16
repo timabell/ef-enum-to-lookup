@@ -2,6 +2,7 @@
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using EfEnumToLookup.LookupGenerator;
 using EFTests.Db;
 using EFTests.Model;
 using NUnit.Framework;
@@ -14,7 +15,14 @@ namespace EFTests.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			Database.SetInitializer(new TestInitializer());
+			// Cleanup after other test runs
+			// Using setup rather than teardown to make it easier to inspect the database after running a test.
+			using (var context = new MagicContext())
+			{
+				context.Database.Delete();
+			}
+
+			Database.SetInitializer(new TestInitializer(new EnumToLookup()));
 			using (var context = new MagicContext())
 			{
 				var roger = new Rabbit { Name = "Roger", TehEars = Ears.Pointy };
