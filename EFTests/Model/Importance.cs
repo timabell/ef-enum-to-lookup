@@ -6,6 +6,9 @@ namespace EFTests.Model
 	{
 		Bovverd = 1,
 
+		[Description(Constants.AintBovveredDisplay)]
+		AintBovverd,
+
 		[Description(Constants.BovveredDisplay)]
 		NotBovverd
 	}
