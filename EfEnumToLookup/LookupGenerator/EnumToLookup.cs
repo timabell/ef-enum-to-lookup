@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Data.Entity.Core.Mapping;
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -74,7 +75,7 @@ namespace EfEnumToLookup.LookupGenerator
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
 			CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
 			// t-sql merge values into table
-			PopulateLookups(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
+			PopulateLookups(enums, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
 			// add fks from all referencing tables
 			AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
 		}
@@ -92,7 +93,7 @@ namespace EfEnumToLookup.LookupGenerator
 			}
 		}
 
-		private void PopulateLookups(IEnumerable<Type> enums, Action<string> runSql)
+		private void PopulateLookups(IEnumerable<Type> enums, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			foreach (var lookup in enums)
 			{
@@ -100,7 +101,7 @@ namespace EfEnumToLookup.LookupGenerator
 			}
 		}
 
-		private void PopulateLookup(Type lookup, Action<string> runSql)
+		private void PopulateLookup(Type lookup, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			if (!lookup.IsEnum)
 			{
@@ -109,6 +110,8 @@ namespace EfEnumToLookup.LookupGenerator
 
 			var sb = new StringBuilder();
 			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
+			var parameters = new List<SqlParameter>();
+			int paramIndex = 0;
 			foreach (var value in Enum.GetValues(lookup))
 			{
 				if (IsRuntimeOnly(value, lookup))
@@ -117,7 +120,11 @@ namespace EfEnumToLookup.LookupGenerator
 				}
 				var id = (int)value;
 				var name = EnumName(value, lookup);
-				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, '{1}');", id, name));
+				var idParamName = string.Format("id{0}", paramIndex++);
+				var nameParamName = string.Format("name{0}", paramIndex++);
+				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
+				parameters.Add(new SqlParameter(idParamName, id));
+				parameters.Add(new SqlParameter(nameParamName, name));
 			}
 
 			sb.AppendLine(string.Format(@"
@@ -134,7 +141,7 @@ MERGE INTO [{0}] dst
 				, TableName(lookup.Name)));
 
 			sb.AppendLine("DROP TABLE #lookups;");
-			runSql(sb.ToString());
+			runSql(sb.ToString(), parameters);
 		}
 
 		private string EnumName(object value, Type lookup)
