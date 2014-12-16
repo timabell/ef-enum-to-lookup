@@ -16,7 +16,7 @@ namespace EFTests.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			Database.SetInitializer(new TestInitializer());
+			Database.SetInitializer(new TestInitializer(new EnumToLookup()));
 		}
 
 

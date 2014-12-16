@@ -5,10 +5,16 @@ namespace EFTests.Db
 {
 	public class TestInitializer : DropCreateDatabaseAlways<MagicContext>
 	{
+		private readonly IEnumToLookup _enumToLookup;
+
+		public TestInitializer(IEnumToLookup enumToLookup)
+		{
+			_enumToLookup = enumToLookup;
+		}
+
 		protected override void Seed(MagicContext context)
 		{
-			IEnumToLookup enumToLookup = new EnumToLookup();
-			enumToLookup.Apply(context);
+			_enumToLookup.Apply(context);
 			base.Seed(context);
 		}
 	}
