@@ -56,7 +56,7 @@ namespace EfEnumToLookup.LookupGenerator
         /// <summary>
         /// Suffix to add to all the generated tables to separate help group them together
         /// and make them stand out as different from other tables.
-        /// Defaults to "" set to null or "" to not have any prefix.
+        /// Defaults to "" set to null or "" to not have any suffix.
         /// </summary>
         public string TableNameSuffix { get; set; }
 
