@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>ef-enum-to-lookup</id>
-        <version>1.2.2</version>
+        <version>1.3.0</version>
         <title>Enum Lookup Table Generator for Entity Framework 6</title>
         <authors>Tim Abell</authors>
         <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -19,9 +19,11 @@ See the project site on github at http://github.com/timabell/ef-enum-to-lookup f
         <summary>Entity Framework 6.1 Enum Lookup Table Generator
 
 Creates lookup tables and foreign key constraints based on the enums used in your model.</summary>
-        <releaseNotes>Fix for collation issues with tempdb
-		
-		https://github.com/timabell/ef-enum-to-lookup/issues/12
+        <releaseNotes>* Allow setting a suffix for the generated table names - https://github.com/timabell/ef-enum-to-lookup/issues/13
+* Handle apostrophes in names - https://github.com/timabell/ef-enum-to-lookup/issues/9
+  Note although this fixes a minor sql injection issue, it introduces a new limit on the number
+  of enum values it can handle in one enum of 1049 (tested on sql server 2012 r2). This is due to use of parameters.
+  If this is a problem for you please open an issue here https://github.com/timabell/ef-enum-to-lookup/issues
 </releaseNotes>
         <copyright>Tim Abell</copyright>
         <language>en-GB</language>
