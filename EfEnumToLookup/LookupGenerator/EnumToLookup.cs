@@ -30,6 +30,7 @@ namespace EfEnumToLookup.LookupGenerator
 		{
 			NameFieldLength = 255; // default
 			TableNamePrefix = "Enum_";
+            TableNameSuffix = "";
 			SplitWords = true;
 		}
 
@@ -51,6 +52,13 @@ namespace EfEnumToLookup.LookupGenerator
 		/// Defaults to "Enum_" set to null or "" to not have any prefix.
 		/// </summary>
 		public string TableNamePrefix { get; set; }
+
+        /// <summary>
+        /// Suffix to add to all the generated tables to separate help group them together
+        /// and make them stand out as different from other tables.
+        /// Defaults to "" set to null or "" to not have any prefix.
+        /// </summary>
+        public string TableNameSuffix { get; set; }
 
 		/// <summary>
 		/// Create any missing lookup tables,
@@ -181,7 +189,7 @@ MERGE INTO [{0}] dst
 
 		private string TableName(string enumName)
 		{
-			return string.Format("{0}{1}", TableNamePrefix, enumName);
+            return string.Format("{0}{1}{2}", TableNamePrefix, enumName, TableNameSuffix);
 		}
 
 		internal IList<EnumReference> FindReferences(DbContext context)
