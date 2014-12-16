@@ -30,7 +30,6 @@ namespace EfEnumToLookup.LookupGenerator
 		{
 			NameFieldLength = 255; // default
 			TableNamePrefix = "Enum_";
-			TableNameSuffix = "";
 			SplitWords = true;
 		}
 
