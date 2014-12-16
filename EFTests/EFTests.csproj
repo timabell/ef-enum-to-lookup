@@ -71,6 +71,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Db\TestInitializer.cs" />
     <Compile Include="Tests\ModelParsingTests.cs" />
+    <Compile Include="Tests\TestConfiguration.cs" />
     <Compile Include="Tests\TestStuff.cs" />
   </ItemGroup>
   <ItemGroup>
