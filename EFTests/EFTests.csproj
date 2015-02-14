@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Bed.cs" />
+    <Compile Include="Model\Chair.cs" />
+    <Compile Include="Model\Furniture.cs" />
     <Compile Include="Model\Aspirations.cs" />
     <Compile Include="Model\Cave.cs" />
     <Compile Include="Db\MagicContext.cs" />
@@ -62,6 +65,7 @@
     <Compile Include="Model\Echo.cs" />
     <Compile Include="Model\Heat.cs" />
     <Compile Include="Model\Importance.cs" />
+    <Compile Include="Model\Pattern.cs" />
     <Compile Include="Model\Relation.cs" />
     <Compile Include="Model\Warren.cs" />
     <Compile Include="Model\Chicken.cs" />
