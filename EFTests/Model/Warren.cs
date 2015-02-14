@@ -12,5 +12,7 @@ namespace EFTests.Model
 		public Heat? HowHot { get; set; }
 
 		public ICollection<Aspirations> HopesAndDreams { get; set; }
+
+		public Geology Geology { get; set; }
 	}
 }

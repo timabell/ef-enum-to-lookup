@@ -34,6 +34,8 @@ namespace EFTests.Tests
 			Assert.IsNotNull(ears, "TehEars ref not found");
 			var echos = references.SingleOrDefault(r => r.ReferencingField == "EchoType");
 			Assert.IsNotNull(echos, "EchoType ref not found");
+			var eons = references.SingleOrDefault(r => r.EnumType == typeof(Eon));
+			Assert.IsNotNull(eons, "Eon ref not found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
 			Assert.AreEqual(8, references.Count);
 		}

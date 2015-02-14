@@ -68,6 +68,8 @@
     <Compile Include="Db\MagicContext.cs" />
     <Compile Include="Model\Constants.cs" />
     <Compile Include="Model\Echo.cs" />
+    <Compile Include="Model\Eon.cs" />
+    <Compile Include="Model\Geology.cs" />
     <Compile Include="Model\Heat.cs" />
     <Compile Include="Model\Importance.cs" />
     <Compile Include="Model\Pattern.cs" />
