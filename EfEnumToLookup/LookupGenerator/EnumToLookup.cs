@@ -206,12 +206,19 @@ MERGE INTO [{0}] dst
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
-			//var everything = metadata.GetItems(DataSpace.OSpace).ToList();
-			var entities = metadata.GetItems<EntityType>(DataSpace.OSpace).ToList(); // this one
-			var complex = metadata.GetItems<ComplexType>(DataSpace.OSpace).ToList(); // and this one
-			var structural = metadata.GetItems<StructuralType>(DataSpace.OSpace).ToList(); // common parent
 			// find and return all the references to enum types
-			var enumReferences = (from entity in WrapSructuralType(metadata.GetItems<StructuralType>(DataSpace.OSpace))
+
+			// get the supported types from the metadata (ComplexType and EntityType)
+			var types = metadata
+				.GetItems<StructuralType>(DataSpace.OSpace)
+				.Where(EfTypeWrapper.IsSupported);
+
+			// wrap them up in something that allows common access to the Properties property - look at the class hierarchy, it's not in the base types :-(
+			var wrappedTypes = EfTypeWrapper.WrapSructuralType(types);
+
+			// find all the properties and convert them to reference information objects
+			var enumReferences = (
+				from entity in wrappedTypes
 				from property in entity.Properties
 				where property.IsEnumType
 				select new EnumReference
@@ -220,21 +227,10 @@ MERGE INTO [{0}] dst
 					ReferencingField = property.Name,
 					EnumType = objectItemCollection.GetClrType(property.EnumType),
 				});
+
 			return enumReferences
 				.Where(r => r.ReferencingTable != null) // filter out child-types in Table-per-Hierarchy model
 				.ToList();
-		}
-
-		/// <summary>
-		/// Wraps complex and entity types in a n interface that allows access to the common `Properties` property
-		/// even though that property isn't in the shared base class.
-		/// </summary>
-		/// <param name="items">The items to wrap.</param>
-		/// <returns>Wrapped items</returns>
-		private IEnumerable<IEfTypeWrapper> WrapSructuralType(ReadOnlyCollection<StructuralType> items)
-		{
-			return from item in items
-				select new EfTypeWrapper(item);
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, StructuralType entityType)

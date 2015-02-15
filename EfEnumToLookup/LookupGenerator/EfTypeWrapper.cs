@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Entity.Core.Metadata.Edm;
+using System.Linq;
 
 namespace EfEnumToLookup.LookupGenerator
 {
@@ -11,7 +13,7 @@ namespace EfEnumToLookup.LookupGenerator
 		{
 			if (itemToWrap == null) throw new ArgumentNullException("itemToWrap");
 
-			if (!(itemToWrap is ComplexType) && !(itemToWrap is EntityType))
+			if (!IsSupported(itemToWrap))
 			{
 				throw new EnumGeneratorException(string.Format(
 					"Unsupported StructuralType encountered while processing EF metadata. supported types: ComplexType and EntityType. Item: {0}",
@@ -41,6 +43,23 @@ namespace EfEnumToLookup.LookupGenerator
 		public StructuralType WrappedObject
 		{
 			get { return _item; }
+		}
+
+		/// <summary>
+		/// Wraps complex and entity types in a n interface that allows access to the common `Properties` property
+		/// even though that property isn't in the shared base class.
+		/// </summary>
+		/// <param name="items">The items to wrap.</param>
+		/// <returns>Wrapped items</returns>
+		public static IEnumerable<IEfTypeWrapper> WrapSructuralType(IEnumerable<StructuralType> items)
+		{
+			return from item in items
+				select new EfTypeWrapper(item);
+		}
+
+		public static bool IsSupported(StructuralType type)
+		{
+			return type is ComplexType || type is EntityType;
 		}
 	}
 }
