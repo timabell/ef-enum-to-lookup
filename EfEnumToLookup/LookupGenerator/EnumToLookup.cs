@@ -208,6 +208,12 @@ MERGE INTO [{0}] dst
 
 			// find and return all the references to enum types
 
+			// todo: more work on complex type mapping
+			/* so it looks like I'm not quite going about this the right way, because although I can find all the complex types
+			 * now, that doesn't actually point out their location in the real model, so it will be impossible to map to tables from here.
+			 * I think instead we should be finding the properties of entities that are a complex type, and looking inside those for enum types,
+			 * then working out how to map that to the actuall table/field in the db as this is somewhat configurable (e.g. the prefix is optional) */
+
 			// get the supported types from the metadata (ComplexType and EntityType)
 			var types = metadata
 				.GetItems<StructuralType>(DataSpace.OSpace)
@@ -239,6 +245,7 @@ MERGE INTO [{0}] dst
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
 			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
 			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+			// * http://blogs.msdn.com/b/alexj/archive/2009/04/03/tip-10-understanding-entity-framework-jargon.aspx
 
 			try
 			{
@@ -261,6 +268,8 @@ MERGE INTO [{0}] dst
 					throw new EnumGeneratorException(string.Format("{0} EntityContainer's found.", containers.Count()));
 				}
 				var container = containers.Single();
+
+				//DataSpace.OCSpace ?? http://stackoverflow.com/questions/22999330/mapping-from-iedmentity-to-clr
 
 				var entitySets = container
 					.EntitySets
