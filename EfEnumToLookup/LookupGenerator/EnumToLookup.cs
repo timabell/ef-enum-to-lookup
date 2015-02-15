@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.Core.Mapping;
@@ -205,13 +206,17 @@ MERGE INTO [{0}] dst
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
+			//var everything = metadata.GetItems(DataSpace.OSpace).ToList();
+			var entities = metadata.GetItems<EntityType>(DataSpace.OSpace).ToList(); // this one
+			var complex = metadata.GetItems<ComplexType>(DataSpace.OSpace).ToList(); // and this one
+			var structural = metadata.GetItems<StructuralType>(DataSpace.OSpace).ToList(); // common parent
 			// find and return all the references to enum types
-			var enumReferences = (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
+			var enumReferences = (from entity in WrapSructuralType(metadata.GetItems<StructuralType>(DataSpace.OSpace))
 				from property in entity.Properties
 				where property.IsEnumType
 				select new EnumReference
 				{
-					ReferencingTable = GetTableName(metadata, entity),
+					ReferencingTable = GetTableName(metadata, entity.WrappedObject),
 					ReferencingField = property.Name,
 					EnumType = objectItemCollection.GetClrType(property.EnumType),
 				});
@@ -220,7 +225,19 @@ MERGE INTO [{0}] dst
 				.ToList();
 		}
 
-		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
+		/// <summary>
+		/// Wraps complex and entity types in a n interface that allows access to the common `Properties` property
+		/// even though that property isn't in the shared base class.
+		/// </summary>
+		/// <param name="items">The items to wrap.</param>
+		/// <returns>Wrapped items</returns>
+		private IEnumerable<IEfTypeWrapper> WrapSructuralType(ReadOnlyCollection<StructuralType> items)
+		{
+			return from item in items
+				select new EfTypeWrapper(item);
+		}
+
+		private static string GetTableName(MetadataWorkspace metadata, StructuralType entityType)
 		{
 			// refs:
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/

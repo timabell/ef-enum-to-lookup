@@ -54,8 +54,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LookupGenerator\EfTypeWrapper.cs" />
     <Compile Include="LookupGenerator\EnumGeneratorException.cs" />
     <Compile Include="LookupGenerator\EnumToLookup.cs" />
+    <Compile Include="LookupGenerator\IEfTypeWrapper.cs" />
     <Compile Include="LookupGenerator\IEnumToLookup.cs" />
     <Compile Include="LookupGenerator\EnumReference.cs" />
     <Compile Include="LookupGenerator\RuntimeOnlyAttribute.cs" />
