@@ -47,3 +47,10 @@ Files stored as LF, converted on checkout to windows, configure locally with
 
 I've looked into the .gitattributes approach to this and it doesn't seem to have
 the desired effect on a windows checkout.
+
+Further reading
+===============
+* http://blogs.msdn.com/b/alexj/archive/2009/04/03/tip-10-understanding-entity-framework-jargon.aspx
+* http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+* http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
+* http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx
