@@ -42,6 +42,7 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\packages\EntityFramework.6.1.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -55,6 +56,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\Category.cs" />
+    <Compile Include="Model\Truck.cs" />
+    <Compile Include="Model\Car.cs" />
+    <Compile Include="Model\Vehicle.cs" />
     <Compile Include="Model\Bed.cs" />
     <Compile Include="Model\Chair.cs" />
     <Compile Include="Model\Furniture.cs" />

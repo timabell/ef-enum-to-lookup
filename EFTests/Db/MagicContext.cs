@@ -17,6 +17,9 @@ namespace EFTests.Db
 		// Table-per-Hierarchy (TPH)
 		public DbSet<Furniture> Furniture { get; set; }
 
+		// Table-per-Type (TPT)
+		public DbSet<Vehicle> Vehicles { get; set; }
+
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<Fox>().Map(f => f.ToTable("Foxies"));
