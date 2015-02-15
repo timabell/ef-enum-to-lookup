@@ -39,7 +39,7 @@ namespace EFTests.Tests
 		}
 
 		[Test]
-		public void FindsEnumOnDbSet()
+		public void FindsEnumOnType()
 		{
 			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
 			var prop = enums.SingleOrDefault(p => p.Name == "TehEars");
@@ -48,7 +48,7 @@ namespace EFTests.Tests
 		}
 
 		[Test]
-		public void FindsNullableEnumOnDbSet()
+		public void FindsNullableEnumOnType()
 		{
 			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
 			var prop = enums.SingleOrDefault(p => p.Name == "SpeedyLegs");
