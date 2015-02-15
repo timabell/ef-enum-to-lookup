@@ -206,20 +206,22 @@ MERGE INTO [{0}] dst
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
 			// find and return all the references to enum types
-			return (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
-					from property in entity.Properties
-					where property.IsEnumType
-					select new EnumReference
-					{
-						ReferencingTable = GetTableName(metadata, entity),
-						ReferencingField = property.Name,
-						EnumType = objectItemCollection.GetClrType(property.EnumType),
-					}).ToList();
+			var enumReferences = (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
+				from property in entity.Properties
+				where property.IsEnumType
+				select new EnumReference
+				{
+					ReferencingTable = GetTableName(metadata, entity),
+					ReferencingField = property.Name,
+					EnumType = objectItemCollection.GetClrType(property.EnumType),
+				});
+			return enumReferences
+				.Where(r => r.ReferencingTable != null) // filter out child-types in Table-per-Hierarchy model
+				.ToList();
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
 		{
-			// bug: https://github.com/timabell/ef-enum-to-lookup/issues/7 - exception on one of the Single() statements
 			// refs:
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
 			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
@@ -251,6 +253,11 @@ MERGE INTO [{0}] dst
 					.EntitySets
 					.Where(s => s.ElementType.Name == entityMetadata.Name)
 					.ToList();
+				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be from the parent/base type.
+				if (!entitySets.Any())
+				{
+					return null;
+				}
 				if (entitySets.Count() != 1)
 				{
 					throw new EnumGeneratorException(string.Format(
@@ -275,11 +282,7 @@ MERGE INTO [{0}] dst
 
 				// Find the storage entity set (table) that the entity is mapped to
 				var entityTypeMappings = mapping.EntityTypeMappings;
-				if (entityTypeMappings.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} EntityTypeMappings found.", entityTypeMappings.Count()));
-				}
-				var entityTypeMapping = entityTypeMappings.Single();
+				var entityTypeMapping = entityTypeMappings.First(); // using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
 				var fragments = entityTypeMapping.Fragments;
 				if (fragments.Count() != 1)
 				{
