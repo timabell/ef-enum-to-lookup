@@ -1,36 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>ef-enum-to-lookup</id>
-        <version>1.3.0</version>
-        <title>Enum Lookup Table Generator for Entity Framework 6</title>
-        <authors>Tim Abell</authors>
-        <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
-        <projectUrl>http://github.com/timabell/ef-enum-to-lookup</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Entity Framework 6.1 Enum Lookup Table Generator
+	<metadata>
+		<id>ef-enum-to-lookup</id>
+		<version>1.4.0</version>
+		<title>Enum Lookup Table Generator for Entity Framework 6</title>
+		<authors>Tim Abell</authors>
+		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+		<projectUrl>http://github.com/timabell/ef-enum-to-lookup</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>
+			Entity Framework 6.1 Enum Lookup Table Generator
 
-Creates lookup tables and foreign key constraints based on the enums used in your model.
+			Creates lookup tables and foreign key constraints based on the enums used in your model.
 
-This makes up for a feature that's missing in Entity Framework 6.1.
+			This makes up for a feature that's missing in Entity Framework 6.1.
 
-See the project site on github at http://github.com/timabell/ef-enum-to-lookup for usage and more information.
-</description>
-        <summary>Entity Framework 6.1 Enum Lookup Table Generator
+			See the project site on github at http://github.com/timabell/ef-enum-to-lookup for usage and more information.
+		</description>
+		<summary>
+			Entity Framework 6.1 Enum Lookup Table Generator
 
-Creates lookup tables and foreign key constraints based on the enums used in your model.</summary>
-        <releaseNotes>* Allow setting a suffix for the generated table names - https://github.com/timabell/ef-enum-to-lookup/issues/13
-* Handle apostrophes in names - https://github.com/timabell/ef-enum-to-lookup/issues/9
-  Note although this fixes a minor sql injection issue, it introduces a new limit on the number
-  of enum values it can handle in one enum of 1049 (tested on sql server 2012 r2). This is due to use of parameters.
-  If this is a problem for you please open an issue here https://github.com/timabell/ef-enum-to-lookup/issues
-</releaseNotes>
-        <copyright>Tim Abell</copyright>
-        <language>en-GB</language>
-    </metadata>
-    <files>
-        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.dll" target="lib\net45\EfEnumToLookup.dll" />
-        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.pdb" target="lib\net45\EfEnumToLookup.pdb" />
-        <file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.XML" target="lib\net45\EfEnumToLookup.XML" />
-    </files>
+			Creates lookup tables and foreign key constraints based on the enums used in your model.
+		</summary>
+		<releaseNotes>
+			Added support for table-per-hierarchy (TPH). https://github.com/timabell/ef-enum-to-lookup/issues/18
+		</releaseNotes>
+		<copyright>Tim Abell</copyright>
+		<language>en-GB</language>
+	</metadata>
+	<files>
+		<file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.dll" target="lib\net45\EfEnumToLookup.dll" />
+		<file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.pdb" target="lib\net45\EfEnumToLookup.pdb" />
+		<file src="EfEnumToLookup\bin\Debug\EfEnumToLookup.XML" target="lib\net45\EfEnumToLookup.XML" />
+	</files>
 </package>
