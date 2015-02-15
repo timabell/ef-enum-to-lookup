@@ -248,7 +248,7 @@ MERGE INTO [{0}] dst
 			{
 				// Get the entity type from the model that maps to the CLR type
 				var entityTypes = metadata
-					.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
+					.GetItems<StructuralType>(DataSpace.OSpace) // OSpace = Object Space
 					.Where(e => e == entityType)
 					.ToList();
 				if (entityTypes.Count() != 1)
