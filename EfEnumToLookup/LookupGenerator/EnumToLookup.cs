@@ -264,7 +264,7 @@ MERGE INTO [{0}] dst
 
 				var entitySets = container
 					.EntitySets
-					.Where(s => s.ElementType.Name == entityMetadata.Name)
+					.Where(s => s.ElementType.Name == entityMetadata.Name) // this doesn't match for complex types. Warren != Geology
 					.ToList();
 				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be from the parent/base type.
 				if (!entitySets.Any())
