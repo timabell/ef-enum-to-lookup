@@ -6,5 +6,8 @@ namespace EFTests.Model
 		public string Soil { get; set; }
 		public int Density { get; set; }
 		public Eon? Eon { get; set; }
+
+		// nested complex type
+		public Continent Continent { get; set; }
 	}
 }
