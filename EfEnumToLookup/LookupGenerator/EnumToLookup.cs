@@ -215,6 +215,10 @@ MERGE INTO [{0}] dst
 					ReferencingField = property.Name,
 					EnumType = objectItemCollection.GetClrType(property.EnumType),
 				});
+			var complexProperties = from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
+				from property in entity.Properties
+				where property.IsComplexType
+				select property; // will also need ref to entity
 			return enumReferences
 				.Where(r => r.ReferencingTable != null) // filter out child-types in Table-per-Hierarchy model
 				.ToList();
