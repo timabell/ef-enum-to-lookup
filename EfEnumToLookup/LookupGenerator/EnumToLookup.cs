@@ -205,24 +205,50 @@ MERGE INTO [{0}] dst
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
 
+			var entities = metadata.GetItems<EntityType>(DataSpace.OSpace);
+
 			// find and return all the references to enum types
-			var enumReferences = (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
-				from property in entity.Properties
-				where property.IsEnumType
-				select new EnumReference
+			var references = new List<EnumReference>();
+			foreach (var entityType in entities)
+			{
+				var referencingTable = GetTableName(metadata, entityType);
+
+				// filter out child-types in Table-per-Hierarchy model
+				if (referencingTable == null)
 				{
-					ReferencingTable = GetTableName(metadata, entity),
-					ReferencingField = property.Name,
-					EnumType = objectItemCollection.GetClrType(property.EnumType),
-				});
-			var complexProperties = from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
-				from property in entity.Properties
-				where property.IsComplexType
-				select property.ComplexType.Properties.Where( p => p.IsEnumType ); // will also need ref to entity
-			// recurse?
-			return enumReferences
-				.Where(r => r.ReferencingTable != null) // filter out child-types in Table-per-Hierarchy model
-				.ToList();
+					continue;
+				}
+
+				references.AddRange(ProcessEdmProperties(entityType.Properties, referencingTable, objectItemCollection));
+			}
+			return references;
+		}
+
+		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, string referencingTable, ObjectItemCollection objectItemCollection, string fieldPrefix = "")
+		{
+			var references = new List<EnumReference>();
+			foreach (var edmProperty in properties)
+			{
+				if (edmProperty.IsEnumType)
+				{
+					references.Add(new EnumReference
+					{
+						ReferencingTable = referencingTable,
+						ReferencingField = fieldPrefix + edmProperty.Name,
+						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
+					});
+					continue;
+				}
+				if (edmProperty.IsComplexType)
+				{
+					// recurse, keeping a reference to the outer entityType
+					// todo: figure out the actual field name of the complex type
+					var prefix = fieldPrefix + edmProperty.Name + "_";
+					references.AddRange(
+						ProcessEdmProperties(edmProperty.ComplexType.Properties,referencingTable,objectItemCollection, prefix));
+				}
+			}
+			return references;
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
