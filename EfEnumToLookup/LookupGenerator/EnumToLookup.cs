@@ -224,6 +224,14 @@ MERGE INTO [{0}] dst
 			return references;
 		}
 
+		/// <summary>
+		/// Recurse through all the specified properties, including the children of any complex type properties looking for enum types.
+		/// </summary>
+		/// <param name="properties">The properties to search.</param>
+		/// <param name="referencingTable">The referencing table name to add to the returned references.</param>
+		/// <param name="objectItemCollection">For looking up ClrTypes</param>
+		/// <param name="fieldPrefix">Optional. The prefix to add to fields in the returned references, used when handling complex types.</param>
+		/// <returns>All the references that were found</returns>
 		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, string referencingTable, ObjectItemCollection objectItemCollection, string fieldPrefix = "")
 		{
 			var references = new List<EnumReference>();
@@ -241,10 +249,10 @@ MERGE INTO [{0}] dst
 				}
 				if (edmProperty.IsComplexType)
 				{
-					// recurse, keeping a reference to the outer entityType
-					// note that complex types can't be nested, but this is a clean way of finding the enums at both the entity and complex type levels without repeating code.
 					// todo: figure out the actual field name of the complex type
 					var prefix = fieldPrefix + edmProperty.Name + "_";
+					// recurse, keeping a reference to the outer entityType
+					// note that complex types can't be nested (ref http://stackoverflow.com/a/20332503/10245 ), but using recursion here is a clean way of finding the enums at both the entity and complex type levels without repeating code.
 					references.AddRange(
 						ProcessEdmProperties(edmProperty.ComplexType.Properties,referencingTable,objectItemCollection, prefix));
 				}
