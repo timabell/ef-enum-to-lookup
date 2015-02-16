@@ -242,6 +242,7 @@ MERGE INTO [{0}] dst
 				if (edmProperty.IsComplexType)
 				{
 					// recurse, keeping a reference to the outer entityType
+					// note that complex types can't be nested, but this is a clean way of finding the enums at both the entity and complex type levels without repeating code.
 					// todo: figure out the actual field name of the complex type
 					var prefix = fieldPrefix + edmProperty.Name + "_";
 					references.AddRange(
