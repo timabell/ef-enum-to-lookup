@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace EFTests.Model
 {
 	public class Geology
@@ -6,5 +8,8 @@ namespace EFTests.Model
 		public string Soil { get; set; }
 		public int Density { get; set; }
 		public Eon? Eon { get; set; }
+
+		[Column("PreviousEon")] // supress the "Geology_" prefix that you'd normally get
+		public Eon? PreviousEon { get; set; }
 	}
 }
