@@ -13,6 +13,7 @@ namespace EFTests.Model
 
 		public ICollection<Aspirations> HopesAndDreams { get; set; }
 
+		// complex type:
 		public Geology Geology { get; set; }
 	}
 }
