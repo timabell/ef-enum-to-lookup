@@ -37,7 +37,7 @@ namespace EFTests.Tests
 			var eons = references.SingleOrDefault(r => r.EnumType == typeof(Eon));
 			Assert.IsNotNull(eons, "Eon ref not found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
-			Assert.AreEqual(8, references.Count);
+			Assert.AreEqual(9, references.Count);
 		}
 
 		[Test]
