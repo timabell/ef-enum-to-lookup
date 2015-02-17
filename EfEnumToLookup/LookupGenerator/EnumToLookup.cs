@@ -219,7 +219,7 @@ MERGE INTO [{0}] dst
 					continue;
 				}
 
-				references.AddRange(ProcessEdmProperties(entityType.Properties, referencingTable, objectItemCollection));
+				references.AddRange(ProcessEdmProperties(entityType.Properties, referencingTable, objectItemCollection, metadata));
 			}
 			return references;
 		}
@@ -230,9 +230,9 @@ MERGE INTO [{0}] dst
 		/// <param name="properties">The properties to search.</param>
 		/// <param name="referencingTable">The referencing table name to add to the returned references.</param>
 		/// <param name="objectItemCollection">For looking up ClrTypes</param>
-		/// <param name="fieldPrefix">Optional. The prefix to add to fields in the returned references, used when handling complex types.</param>
+		/// <param name="metadata"></param>
 		/// <returns>All the references that were found</returns>
-		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, string referencingTable, ObjectItemCollection objectItemCollection, string fieldPrefix = "")
+		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, string referencingTable, ObjectItemCollection objectItemCollection, MetadataWorkspace metadata)
 		{
 			var references = new List<EnumReference>();
 			foreach (var edmProperty in properties)
@@ -242,22 +242,26 @@ MERGE INTO [{0}] dst
 					references.Add(new EnumReference
 					{
 						ReferencingTable = referencingTable,
-						ReferencingField = fieldPrefix + edmProperty.Name,
+						ReferencingField = GetColumnName(metadata, edmProperty),
 						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
 					});
 					continue;
 				}
 				if (edmProperty.IsComplexType)
 				{
-					// todo: figure out the actual field name of the complex type
-					var prefix = fieldPrefix + edmProperty.Name + "_";
 					// recurse, keeping a reference to the outer entityType
 					// note that complex types can't be nested (ref http://stackoverflow.com/a/20332503/10245 ), but using recursion here is a clean way of finding the enums at both the entity and complex type levels without repeating code.
 					references.AddRange(
-						ProcessEdmProperties(edmProperty.ComplexType.Properties,referencingTable,objectItemCollection, prefix));
+						ProcessEdmProperties(edmProperty.ComplexType.Properties,referencingTable,objectItemCollection, metadata));
 				}
 			}
 			return references;
+		}
+
+		private static string GetColumnName(MetadataWorkspace metadata, EdmProperty edmProperty)
+		{
+			// todo: read metadata mappings and find column
+			return edmProperty.Name;
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
