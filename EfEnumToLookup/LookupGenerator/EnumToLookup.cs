@@ -226,15 +226,15 @@ MERGE INTO [{0}] dst
 			var references = new List<EnumReference>();
 			foreach (var entityType in entities)
 			{
-				var referencingTable = GetTableName(metadata, entityType);
+				var mappingFragment = FindSchemaMappingFragment(metadata, entityType);
 
-				// filter out child-types in Table-per-Hierarchy model
-				if (referencingTable == null)
+				// child types in TPH don't get mappings
+				if (mappingFragment == null)
 				{
 					continue;
 				}
 
-				references.AddRange(ProcessEdmProperties(entityType.Properties, referencingTable, objectItemCollection, metadata));
+				references.AddRange(ProcessEdmProperties(entityType.Properties, mappingFragment, objectItemCollection, metadata));
 			}
 			return references;
 		}
@@ -243,11 +243,11 @@ MERGE INTO [{0}] dst
 		/// Recurse through all the specified properties, including the children of any complex type properties looking for enum types.
 		/// </summary>
 		/// <param name="properties">The properties to search.</param>
-		/// <param name="referencingTable">The referencing table name to add to the returned references.</param>
+		/// <param name="mappingFragment">Information needed from ef metadata to map table and its columns</param>
 		/// <param name="objectItemCollection">For looking up ClrTypes</param>
 		/// <param name="metadata"></param>
 		/// <returns>All the references that were found</returns>
-		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, string referencingTable, ObjectItemCollection objectItemCollection, MetadataWorkspace metadata)
+		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, MappingFragment mappingFragment, ObjectItemCollection objectItemCollection, MetadataWorkspace metadata)
 		{
 			var references = new List<EnumReference>();
 			foreach (var edmProperty in properties)
@@ -256,8 +256,8 @@ MERGE INTO [{0}] dst
 				{
 					references.Add(new EnumReference
 					{
-						ReferencingTable = referencingTable,
-						ReferencingField = GetColumnName(metadata, edmProperty),
+						ReferencingTable = mappingFragment.StoreEntitySet.Table,
+						ReferencingField = GetColumnName(mappingFragment, edmProperty),
 						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
 					});
 					continue;
@@ -267,19 +267,48 @@ MERGE INTO [{0}] dst
 					// recurse, keeping a reference to the outer entityType
 					// note that complex types can't be nested (ref http://stackoverflow.com/a/20332503/10245 ), but using recursion here is a clean way of finding the enums at both the entity and complex type levels without repeating code.
 					references.AddRange(
-						ProcessEdmProperties(edmProperty.ComplexType.Properties,referencingTable,objectItemCollection, metadata));
+						ProcessEdmProperties(edmProperty.ComplexType.Properties, mappingFragment, objectItemCollection, metadata));
 				}
 			}
 			return references;
 		}
 
-		private static string GetColumnName(MetadataWorkspace metadata, EdmProperty edmProperty)
+		private static string GetColumnName(MappingFragment mappingFragment, EdmProperty edmProperty)
 		{
+			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
+			if (matches.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} matches found for property {1}", matches.Count(), edmProperty));
+			}
+			var match = matches.Single();
+			// wip
 			// todo: read metadata mappings and find column
 			return edmProperty.Name;
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
+		{
+
+			try
+			{
+				var mappingFragment = FindSchemaMappingFragment(metadata, entityType);
+				// child types in TPH don't get mappings
+				if (mappingFragment == null)
+				{
+					return null;
+				}
+				var columnMappings = mappingFragment.PropertyMappings;
+				var tableName = mappingFragment.StoreEntitySet.Table;
+				return tableName;
+			}
+			catch (Exception exception)
+			{
+				throw new EnumGeneratorException(string.Format("Error getting table name for entity type '{0}'", entityType.Name), exception);
+			}
+		}
+
+		private static MappingFragment FindSchemaMappingFragment(MetadataWorkspace metadata, EntityType entityType)
 		{
 			// refs:
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
@@ -295,7 +324,8 @@ MERGE INTO [{0}] dst
 					.ToList();
 				if (entityTypes.Count() != 1)
 				{
-					throw new EnumGeneratorException(string.Format("{0} entities of type {1} found in mapping.", entityTypes.Count(), entityType));
+					throw new EnumGeneratorException(string.Format("{0} entities of type {1} found in mapping.", entityTypes.Count(),
+						entityType));
 				}
 				var entityMetadata = entityTypes.Single();
 
@@ -325,7 +355,8 @@ MERGE INTO [{0}] dst
 				var entitySet = entitySets.Single();
 
 				// Find the mapping between conceptual and storage model for this entity set
-				var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace); // CSSpace = Conceptual model to Storage model mappings
+				var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace);
+				// CSSpace = Conceptual model to Storage model mappings
 				if (entityContainerMappings.Count() != 1)
 				{
 					throw new EnumGeneratorException(string.Format("{0} EntityContainerMappings found.", entityContainerMappings.Count()));
@@ -341,19 +372,20 @@ MERGE INTO [{0}] dst
 
 				// Find the storage entity set (table) that the entity is mapped to
 				var entityTypeMappings = mapping.EntityTypeMappings;
-				var entityTypeMapping = entityTypeMappings.First(); // using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
-				var fragments = entityTypeMapping.Fragments; // <=== this contains the column mappings too. fragments.Items[x].PropertyMappings.Items[x].Column/Property
+				var entityTypeMapping = entityTypeMappings.First();
+				// using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
+				var fragments = entityTypeMapping.Fragments;
+				// <=== this contains the column mappings too. fragments.Items[x].PropertyMappings.Items[x].Column/Property
 				if (fragments.Count() != 1)
 				{
 					throw new EnumGeneratorException(string.Format("{0} Fragments found.", fragments.Count()));
 				}
-				var table = fragments.Single().StoreEntitySet;
-				var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name; // don't need to go into metadata, it's probably available via a cast
-				return tableName;
+				var fragment = fragments.Single();
+				return fragment;
 			}
 			catch (Exception exception)
 			{
-				throw new EnumGeneratorException(string.Format("Error getting table name for entity type '{0}'", entityType.Name), exception);
+				throw new EnumGeneratorException(string.Format("Error getting schema mappings for entity type '{0}'", entityType.Name), exception);
 			}
 		}
 
