@@ -211,7 +211,14 @@ MERGE INTO [{0}] dst
 			var OCSpace = metadata.GetItems(DataSpace.OCSpace);
 			var CSpace = metadata.GetItems(DataSpace.CSpace);
 			var CSSpace = metadata.GetItems(DataSpace.CSSpace);
-			var SSpace = metadata.GetItems(DataSpace.SSpace);
+			var SSpace = metadata.GetItems<EdmType>(DataSpace.SSpace);
+
+			//var CSItem = CSSpace.Single()
+
+			var SItem = SSpace.Single(s => s.Name == "Rabbit");
+			var SItemMem = SItem.MetadataProperties.Single(m => m.Name == "Members");
+			var SItemMemCast = (ReadOnlyMetadataCollection<EdmMember>)SItemMem.Value;
+			var lineageCol = SItemMemCast.Single(m => m.Name == "Lineage");
 
 			// find and return all the references to enum types
 			var references = new List<EnumReference>();
