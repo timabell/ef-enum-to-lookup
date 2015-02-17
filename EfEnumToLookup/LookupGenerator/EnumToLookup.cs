@@ -210,7 +210,9 @@ MERGE INTO [{0}] dst
 			var OSpace = metadata.GetItems(DataSpace.OSpace);
 			var OCSpace = metadata.GetItems(DataSpace.OCSpace);
 			var CSpace = metadata.GetItems(DataSpace.CSpace);
-			var CSSpace = metadata.GetItems(DataSpace.CSSpace);
+			// have entity type in conceptual space
+			var CSSpace = metadata.GetItems(DataSpace.CSSpace)
+				.Single(); // the only container
 			var SSpace = metadata.GetItems<EdmType>(DataSpace.SSpace);
 
 			//var CSItem = CSSpace.Single()
@@ -340,13 +342,13 @@ MERGE INTO [{0}] dst
 				// Find the storage entity set (table) that the entity is mapped to
 				var entityTypeMappings = mapping.EntityTypeMappings;
 				var entityTypeMapping = entityTypeMappings.First(); // using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
-				var fragments = entityTypeMapping.Fragments;
+				var fragments = entityTypeMapping.Fragments; // <=== this contains the column mappings too. fragments.Items[x].PropertyMappings.Items[x].Column/Property
 				if (fragments.Count() != 1)
 				{
 					throw new EnumGeneratorException(string.Format("{0} Fragments found.", fragments.Count()));
 				}
 				var table = fragments.Single().StoreEntitySet;
-				var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name;
+				var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name; // don't need to go into metadata, it's probably available via a cast
 				return tableName;
 			}
 			catch (Exception exception)
