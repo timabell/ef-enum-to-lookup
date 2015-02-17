@@ -207,6 +207,12 @@ MERGE INTO [{0}] dst
 
 			var entities = metadata.GetItems<EntityType>(DataSpace.OSpace);
 
+			var OSpace = metadata.GetItems(DataSpace.OSpace);
+			var OCSpace = metadata.GetItems(DataSpace.OCSpace);
+			var CSpace = metadata.GetItems(DataSpace.CSpace);
+			var CSSpace = metadata.GetItems(DataSpace.CSSpace);
+			var SSpace = metadata.GetItems(DataSpace.SSpace);
+
 			// find and return all the references to enum types
 			var references = new List<EnumReference>();
 			foreach (var entityType in entities)
