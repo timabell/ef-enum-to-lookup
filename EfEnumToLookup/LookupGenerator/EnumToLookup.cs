@@ -249,6 +249,7 @@ MERGE INTO [{0}] dst
 		/// <returns>All the references that were found</returns>
 		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, MappingFragment mappingFragment, ObjectItemCollection objectItemCollection, MetadataWorkspace metadata)
 		{
+			// todo - untagle the recursion, makes complex types too complicated to handle.
 			var references = new List<EnumReference>();
 			foreach (var edmProperty in properties)
 			{
@@ -275,6 +276,7 @@ MERGE INTO [{0}] dst
 
 		private static string GetColumnName(MappingFragment mappingFragment, EdmProperty edmProperty)
 		{
+			// todo: complex type not found on name, wrong level
 			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
 			if (matches.Count() != 1)
 			{
@@ -282,6 +284,7 @@ MERGE INTO [{0}] dst
 					"{0} matches found for property {1}", matches.Count(), edmProperty));
 			}
 			var match = matches.Single();
+			// todo - handle ComplexPropertyMapping
 			var colMapping = match as ScalarPropertyMapping;
 			if (colMapping == null)
 			{
