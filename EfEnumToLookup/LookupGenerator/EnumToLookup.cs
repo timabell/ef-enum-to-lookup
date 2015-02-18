@@ -282,9 +282,13 @@ MERGE INTO [{0}] dst
 					"{0} matches found for property {1}", matches.Count(), edmProperty));
 			}
 			var match = matches.Single();
-			// wip
-			// todo: read metadata mappings and find column
-			return edmProperty.Name;
+			var colMapping = match as ScalarPropertyMapping;
+			if (colMapping == null)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", match.GetType(), edmProperty));
+			}
+			return colMapping.Column.Name;
 		}
 
 		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
