@@ -206,7 +206,8 @@ MERGE INTO [{0}] dst
 		{
 			var metadataWorkspace = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
-			return MetadataHandler.FindEnumReferences(metadataWorkspace);
+			var metadataHandler = new MetadataHandler();
+			return metadataHandler.FindEnumReferences(metadataWorkspace);
 		}
 
 		internal IList<PropertyInfo> FindDbSets(Type contextType)

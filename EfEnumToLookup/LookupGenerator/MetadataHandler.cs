@@ -8,7 +8,7 @@
 
 	class MetadataHandler
 	{
-		internal static IList<EnumReference> FindEnumReferences(MetadataWorkspace metadataWorkspace)
+		internal IList<EnumReference> FindEnumReferences(MetadataWorkspace metadataWorkspace)
 		{
 			// Get the part of the model that contains info about the actual CLR types
 			var objectItemCollection = ((ObjectItemCollection)metadataWorkspace.GetItemCollection(DataSpace.OSpace));
