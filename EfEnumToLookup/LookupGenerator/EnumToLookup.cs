@@ -70,11 +70,14 @@
 		{
 			// recurese through dbsets and references finding anything that uses an enum
 			var enumReferences = FindEnumReferences(context);
+
 			// for the list of enums generate tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
 			CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
+
 			// t-sql merge values into table
 			PopulateLookups(enums, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
+
 			// add fks from all referencing tables
 			AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
 		}
@@ -84,10 +87,12 @@
 			foreach (var enumReference in refs)
 			{
 				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
-				var sql =
-					string.Format(
-						" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);",
-						fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name));
+
+				var sql = string.Format(
+					" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);",
+					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name)
+				);
+
 				runSql(sql);
 			}
 		}
