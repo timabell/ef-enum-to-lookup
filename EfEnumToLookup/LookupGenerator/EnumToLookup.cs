@@ -267,7 +267,7 @@ MERGE INTO [{0}] dst
 			return references;
 		}
 
-		private static string GetColumnName(MappingFragment mappingFragment, EdmProperty edmProperty)
+		private static string GetColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty)
 		{
 			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
 			if (matches.Count() != 1)
@@ -276,7 +276,7 @@ MERGE INTO [{0}] dst
 					"{0} matches found for property {1}", matches.Count(), edmProperty));
 			}
 			var match = matches.Single();
-			// todo - handle ComplexPropertyMapping
+
 			var colMapping = match as ScalarPropertyMapping;
 			if (colMapping == null)
 			{
@@ -286,7 +286,7 @@ MERGE INTO [{0}] dst
 			return colMapping.Column.Name;
 		}
 
-		private static string GetComplexColumnName(MappingFragment mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty)
+		private static string GetComplexColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty)
 		{
 			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
 			if (matches.Count() != 1)
@@ -322,27 +322,6 @@ MERGE INTO [{0}] dst
 					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", match.GetType(), edmProperty));
 			}
 			return colMapping.Column.Name;
-		}
-
-		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
-		{
-
-			try
-			{
-				var mappingFragment = FindSchemaMappingFragment(metadata, entityType);
-				// child types in TPH don't get mappings
-				if (mappingFragment == null)
-				{
-					return null;
-				}
-				var columnMappings = mappingFragment.PropertyMappings;
-				var tableName = mappingFragment.StoreEntitySet.Table;
-				return tableName;
-			}
-			catch (Exception exception)
-			{
-				throw new EnumGeneratorException(string.Format("Error getting table name for entity type '{0}'", entityType.Name), exception);
-			}
 		}
 
 		private static MappingFragment FindSchemaMappingFragment(MetadataWorkspace metadata, EntityType entityType)
