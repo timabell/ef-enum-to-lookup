@@ -308,10 +308,10 @@ MERGE INTO [{0}] dst
 
 				propertyMapping = propertyMappings.Single();
 			}
-			return GetColumnName(edmProperty, propertyMapping);
+			return GetColumnNameFromPropertyMapping(edmProperty, propertyMapping);
 		}
 
-		private static string GetColumnName(EdmProperty edmProperty, PropertyMapping propertyMapping)
+		private static string GetColumnNameFromPropertyMapping(EdmProperty edmProperty, PropertyMapping propertyMapping)
 		{
 			var colMapping = propertyMapping as ScalarPropertyMapping;
 			if (colMapping == null)
