@@ -308,13 +308,13 @@ MERGE INTO [{0}] dst
 					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", matches.Count(), edmProperty, nestedProperty));
 			}
 			var complexTypeMapping = complexPropertyMapping.TypeMappings.Single();
-			var complextMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
-			if (complextMappings.Count() != 1)
+			var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
+			if (propertyMappings.Count() != 1)
 			{
 				throw new EnumGeneratorException(string.Format(
-					"{0} complexMappings found for property {1}.{2}", complextMappings.Count(), edmProperty, nestedProperty));
+					"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), edmProperty, nestedProperty));
 			}
-			var scalarMapping = complextMappings.Single();
+			var scalarMapping = propertyMappings.Single();
 			var colMapping = scalarMapping as ScalarPropertyMapping;
 			if (colMapping == null)
 			{
