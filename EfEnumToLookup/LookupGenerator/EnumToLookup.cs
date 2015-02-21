@@ -29,7 +29,8 @@ namespace EfEnumToLookup.LookupGenerator
 	{
 		public EnumToLookup()
 		{
-			NameFieldLength = 255; // default
+			// set default behaviour, can be overridden by setting properties on object before calling Apply()
+			NameFieldLength = 255;
 			TableNamePrefix = "Enum_";
 			SplitWords = true;
 		}
@@ -168,7 +169,7 @@ MERGE INTO [{0}] dst
 			return name;
 		}
 
-		private string DescriptionValue(object value, Type enumType)
+		private static string DescriptionValue(object value, Type enumType)
 		{
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
@@ -176,7 +177,7 @@ MERGE INTO [{0}] dst
 			return description == null ? null : description.Description;
 		}
 
-		private bool IsRuntimeOnly(object value, Type enumType)
+		private static bool IsRuntimeOnly(object value, Type enumType)
 		{
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
