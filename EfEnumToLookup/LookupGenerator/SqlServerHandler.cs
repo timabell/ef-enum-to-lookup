@@ -27,7 +27,7 @@
 		/// </summary>
 		public string TableNameSuffix { get; set; }
 
-		internal void CreateTables(IEnumerable<Type> enums, Action<string> runSql)
+		internal void CreateTables(IEnumerable<LookupData> enums, Action<string> runSql)
 		{
 			foreach (var lookup in enums)
 			{

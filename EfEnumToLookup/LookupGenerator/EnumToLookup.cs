@@ -83,16 +83,17 @@
 
 			// for the list of enums generate and missing tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
-			sqlServerHandler.CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
 
 			// merge values into these tables
 			var lookups =
-				from enm in enums
+				(from enm in enums
 				select new LookupData
 				{
 					Name = enm.Name,
 					Values = GetLookupValues(enm),
-				};
+				}).ToList();
+
+			sqlServerHandler.CreateTables(lookups, (sql) => context.Database.ExecuteSqlCommand(sql));
 			sqlServerHandler.PopulateLookups(lookups, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
 
 			// add fks from all referencing tables
@@ -131,7 +132,7 @@
 			return description == null ? null : description.Description;
 		}
 
-		private IList<LookupValue> GetLookupValues(Type lookup)
+		private IEnumerable<LookupValue> GetLookupValues(Type lookup)
 		{
 			if (!lookup.IsEnum)
 			{
