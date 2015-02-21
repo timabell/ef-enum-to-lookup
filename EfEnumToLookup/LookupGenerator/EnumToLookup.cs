@@ -271,24 +271,51 @@ MERGE INTO [{0}] dst
 
 		private static string GetColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty)
 		{
-			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
-			if (matches.Count() != 1)
+			var propertyMapping = GetPropertyMapping(mappingFragment, edmProperty);
+
+			return GetColumnName(edmProperty, propertyMapping, propertyMapping);
+		}
+
+		private static string GetComplexColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty)
+		{
+			var propertyMapping = GetPropertyMapping(mappingFragment, edmProperty);
+
+			var complexPropertyMapping = propertyMapping as ComplexPropertyMapping;
+			if (complexPropertyMapping == null)
 			{
 				throw new EnumGeneratorException(string.Format(
-					"{0} matches found for property {1}", matches.Count(), edmProperty));
+					"Failed to cast complex property mapping for {0}.{1} to ComplexPropertyMapping", edmProperty, nestedProperty));
 			}
-			var match = matches.Single();
+			var complexTypeMappings = complexPropertyMapping.TypeMappings;
+			if (complexTypeMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", complexTypeMappings.Count(), edmProperty, nestedProperty));
+			}
+			var complexTypeMapping = complexTypeMappings.Single();
+			var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
+			if (propertyMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), edmProperty, nestedProperty));
+			}
+			var innerPropertyMapping = propertyMappings.Single();
+			return GetColumnName(edmProperty, innerPropertyMapping, innerPropertyMapping);
+		}
 
-			var colMapping = match as ScalarPropertyMapping;
+		private static string GetColumnName(EdmProperty edmProperty, PropertyMapping scalarMapping,
+			PropertyMapping propertyMapping)
+		{
+			var colMapping = scalarMapping as ScalarPropertyMapping;
 			if (colMapping == null)
 			{
 				throw new EnumGeneratorException(string.Format(
-					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", match.GetType(), edmProperty));
+					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", propertyMapping.GetType(), edmProperty));
 			}
 			return colMapping.Column.Name;
 		}
 
-		private static string GetComplexColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty)
+		private static PropertyMapping GetPropertyMapping(StructuralTypeMapping mappingFragment, EdmProperty edmProperty)
 		{
 			var matches = mappingFragment.PropertyMappings.Where(m => m.Property.Name == edmProperty.Name).ToList();
 			if (matches.Count() != 1)
@@ -297,33 +324,7 @@ MERGE INTO [{0}] dst
 					"{0} matches found for property {1}", matches.Count(), edmProperty));
 			}
 			var match = matches.Single();
-
-			var complexPropertyMapping = match as ComplexPropertyMapping;
-			if (complexPropertyMapping == null)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"Failed to cast complex property mapping for {0}.{1} to ComplexPropertyMapping", edmProperty, nestedProperty));
-			}
-			if (complexPropertyMapping.TypeMappings.Count() != 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", matches.Count(), edmProperty, nestedProperty));
-			}
-			var complexTypeMapping = complexPropertyMapping.TypeMappings.Single();
-			var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
-			if (propertyMappings.Count() != 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), edmProperty, nestedProperty));
-			}
-			var scalarMapping = propertyMappings.Single();
-			var colMapping = scalarMapping as ScalarPropertyMapping;
-			if (colMapping == null)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", match.GetType(), edmProperty));
-			}
-			return colMapping.Column.Name;
+			return match;
 		}
 
 		private static MappingFragment FindSchemaMappingFragment(MetadataWorkspace metadata, EntityType entityType)
