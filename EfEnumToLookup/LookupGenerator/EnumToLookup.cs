@@ -302,14 +302,12 @@ MERGE INTO [{0}] dst
 				throw new EnumGeneratorException(string.Format(
 					"Failed to cast complex property mapping for {0}.{1} to ComplexPropertyMapping", edmProperty, nestedProperty));
 			}
+			if (complexPropertyMapping.TypeMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", matches.Count(), edmProperty, nestedProperty));
+			}
 			var complexTypeMapping = complexPropertyMapping.TypeMappings.Single();
-				//.Where(cp => cp.ComplexType.Name == nestedProperty.Name).ToList();
-			//if (complexPropertyMatches.Count() != 1)
-			//{
-			//	throw new EnumGeneratorException(string.Format(
-			//		"{0} matches found for complex property {1}", complexPropertyMatches.Count(), nestedProperty));
-			//}
-			//var complexPropertyMatch = complexPropertyMatches.Single();
 			var complextMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
 			if (complextMappings.Count() != 1)
 			{
