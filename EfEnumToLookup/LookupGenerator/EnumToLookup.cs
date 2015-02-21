@@ -93,11 +93,7 @@
 					Values = GetLookupValues(enm),
 				}).ToList();
 
-			sqlServerHandler.CreateTables(lookups, (sql) => ExecuteSqlCommand(context, sql));
-			sqlServerHandler.PopulateLookups(lookups, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
-
-			// add fks from all referencing tables
-			sqlServerHandler.AddForeignKeys(enumReferences, (sql) => ExecuteSqlCommand(context, sql));
+			sqlServerHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
 
 		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)

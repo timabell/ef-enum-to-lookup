@@ -27,7 +27,15 @@
 		/// </summary>
 		public string TableNameSuffix { get; set; }
 
-		internal void CreateTables(IEnumerable<LookupData> enums, Action<string> runSql)
+
+		internal void Apply(List<LookupData> lookups, IList<EnumReference> enumReferences, Action<string, IEnumerable<SqlParameter>> runSql)
+		{
+			CreateTables(lookups, (sql) => runSql(sql, null));
+			PopulateLookups(lookups, runSql);
+			AddForeignKeys(enumReferences, (sql) => runSql(sql, null));
+		}
+
+		private void CreateTables(IEnumerable<LookupData> enums, Action<string> runSql)
 		{
 			foreach (var lookup in enums)
 			{
@@ -37,7 +45,7 @@
 			}
 		}
 
-		internal void AddForeignKeys(IEnumerable<EnumReference> refs, Action<string> runSql)
+		private void AddForeignKeys(IEnumerable<EnumReference> refs, Action<string> runSql)
 		{
 			foreach (var enumReference in refs)
 			{
@@ -52,7 +60,7 @@
 			}
 		}
 
-		internal void PopulateLookups(IEnumerable<LookupData> lookupData, Action<string, IEnumerable<SqlParameter>> runSql)
+		private void PopulateLookups(IEnumerable<LookupData> lookupData, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			foreach (var lookup in lookupData)
 			{
