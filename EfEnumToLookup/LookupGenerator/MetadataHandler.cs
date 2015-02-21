@@ -8,6 +8,12 @@
 
 	class MetadataHandler
 	{
+		// refs:
+		// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
+		// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
+		// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+		// * http://stackoverflow.com/questions/22999330/mapping-from-iedmentity-to-clr
+
 		internal IList<EnumReference> FindEnumReferences(MetadataWorkspace metadataWorkspace)
 		{
 			// Get the part of the model that contains info about the actual CLR types
@@ -116,6 +122,7 @@
 
 				propertyMapping = propertyMappings.Single();
 			}
+
 			return GetColumnNameFromPropertyMapping(edmProperty, propertyMapping);
 		}
 
@@ -144,82 +151,17 @@
 
 		private static MappingFragment FindSchemaMappingFragment(MetadataWorkspace metadata, EntityType entityType)
 		{
-			// refs:
-			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
-			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
-			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
-			// * http://stackoverflow.com/questions/22999330/mapping-from-iedmentity-to-clr
-
-			// todo: break this function down into manageable chunks
-
 			try
 			{
-				// Get the entity type from the model that maps to the CLR type
-				var entityTypes = metadata
-					.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
-					.Where(e => e == entityType)
-					.ToList();
-				if (entityTypes.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} entities of type {1} found in mapping.", entityTypes.Count(),
-						entityType));
-				}
-				var entityMetadata = entityTypes.Single();
+				var conceptualEntitySet = FindConceptualEntity(metadata, entityType);
 
-				// Get the entity set that uses this entity type
-				var containers = metadata
-					.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
-				if (containers.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} EntityContainer's found.", containers.Count()));
-				}
-				var container = containers.Single();
-
-				var entitySets = container
-					.EntitySets
-					.Where(s => s.ElementType.Name == entityMetadata.Name)
-					.ToList();
-
-				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be created from the base type.
-				if (!entitySets.Any())
+				// Child types in Table-per-Hierarchy don't have any mappings defined as they don't add any new tables, so skip them.
+				if (conceptualEntitySet == null)
 				{
 					return null;
 				}
-				if (entitySets.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format(
-						"{0} EntitySet's found for element type '{1}'.", entitySets.Count(), entityMetadata.Name));
-				}
-				var entitySet = entitySets.Single();
 
-				// Find the mapping between conceptual and storage model for this entity set
-				var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace);
-				// CSSpace = Conceptual model to Storage model mappings
-				if (entityContainerMappings.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} EntityContainerMappings found.", entityContainerMappings.Count()));
-				}
-				var containerMapping = entityContainerMappings.Single();
-				var mappings = containerMapping.EntitySetMappings.Where(s => s.EntitySet == entitySet).ToList();
-				if (mappings.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format(
-						"{0} EntitySetMappings found for entitySet '{1}'.", mappings.Count(), entitySet.Name));
-				}
-				var mapping = mappings.Single();
-
-				// Find the storage entity set (table) that the entity is mapped to
-				var entityTypeMappings = mapping.EntityTypeMappings;
-				var entityTypeMapping = entityTypeMappings.First();
-				// using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
-				var fragments = entityTypeMapping.Fragments;
-				// <=== this contains the column mappings too. fragments.Items[x].PropertyMappings.Items[x].Column/Property
-				if (fragments.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} Fragments found.", fragments.Count()));
-				}
-				var fragment = fragments.Single();
-				return fragment;
+				return FindStorageMappingFragmentFromConceptual(metadata, conceptualEntitySet);
 			}
 			catch (Exception exception)
 			{
@@ -227,5 +169,97 @@
 			}
 		}
 
+		private static EntitySet FindConceptualEntity(MetadataWorkspace metadata, EntityType entityType)
+		{
+			var entityMetadata = FindObjectSpaceEntityMetadata(metadata, entityType);
+
+			// Get the entity set that uses this entity type
+			var containers = metadata
+				.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
+			if (containers.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format("{0} EntityContainer's found.", containers.Count()));
+			}
+			var container = containers.Single();
+
+			var entitySets = container
+				.EntitySets
+				.Where(s => s.ElementType.Name == entityMetadata.Name)
+				// doesn't seem to be possible to get at the Object-Conceptual mappings from the public API so match on name.
+				.ToList();
+
+			// Child types in Table-per-Hierarchy don't have any mappings defined as they don't add any new tables, so skip them.
+			if (!entitySets.Any())
+			{
+				return null;
+			}
+
+			if (entitySets.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} EntitySet's found for element type '{1}'.", entitySets.Count(), entityMetadata.Name));
+			}
+			var entitySet = entitySets.Single();
+
+			return entitySet;
+		}
+
+		private static EntityType FindObjectSpaceEntityMetadata(MetadataWorkspace metadata, EntityType entityType)
+		{
+			// Get the entity type from the model that maps to the CLR type
+			var entityTypes = metadata
+				.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
+				.Where(e => e == entityType)
+				.ToList();
+			if (entityTypes.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format("{0} entities of type {1} found in mapping.", entityTypes.Count(),
+					entityType));
+			}
+			var entityMetadata = entityTypes.Single();
+			return entityMetadata;
+		}
+
+		private static MappingFragment FindStorageMappingFragmentFromConceptual(MetadataWorkspace metadata, EntitySet conceptualEntitySet)
+		{
+			var storageMapping = FindStorageMapping(metadata, conceptualEntitySet);
+
+			return FindStorageMappingFragmentInStorageMapping(storageMapping);
+		}
+
+		private static MappingFragment FindStorageMappingFragmentInStorageMapping(EntitySetMapping storageMapping)
+		{
+			// Find the storage mapping fragment that the entity is mapped to
+			var entityTypeMappings = storageMapping.EntityTypeMappings;
+			var entityTypeMapping = entityTypeMappings.First();
+			// using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
+			var fragments = entityTypeMapping.Fragments;
+			if (fragments.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format("{0} Fragments found.", fragments.Count()));
+			}
+			var fragment = fragments.Single();
+			return fragment;
+		}
+
+		private static EntitySetMapping FindStorageMapping(MetadataWorkspace metadata, EntitySet conceptualEntitySet)
+		{
+			// Find the mapping between conceptual and storage model for this entity set
+			var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace);
+			// CSSpace = Conceptual model to Storage model mappings
+			if (entityContainerMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format("{0} EntityContainerMappings found.", entityContainerMappings.Count()));
+			}
+			var containerMapping = entityContainerMappings.Single();
+			var mappings = containerMapping.EntitySetMappings.Where(s => s.EntitySet == conceptualEntitySet).ToList();
+			if (mappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} EntitySetMappings found for entitySet '{1}'.", mappings.Count(), conceptualEntitySet.Name));
+			}
+			var mapping = mappings.Single();
+			return mapping;
+		}
 	}
 }
