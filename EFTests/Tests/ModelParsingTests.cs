@@ -26,7 +26,7 @@ namespace EFTests.Tests
 			IList<EnumReference> references;
 			using (var context = new MagicContext())
 			{
-				references = _enumToLookup.FindReferences(context);
+				references = _enumToLookup.FindEnumReferences(context);
 			}
 			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
 			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
