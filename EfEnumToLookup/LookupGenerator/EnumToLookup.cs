@@ -339,10 +339,6 @@ MERGE INTO [{0}] dst
 				}
 				var entityMetadata = entityTypes.Single();
 
-				// todo: map properly from object space to conceptual space
-				var OCSpace = metadata.GetItems(DataSpace.OCSpace);
-				//OCSpace.Where(oc => oc.)
-
 				// Get the entity set that uses this entity type
 				var containers = metadata
 					.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
