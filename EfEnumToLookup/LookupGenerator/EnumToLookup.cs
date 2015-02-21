@@ -321,6 +321,7 @@ MERGE INTO [{0}] dst
 			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
 			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
 			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
+			// * http://stackoverflow.com/questions/22999330/mapping-from-iedmentity-to-clr
 
 			try
 			{
