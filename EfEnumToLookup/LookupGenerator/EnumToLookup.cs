@@ -71,20 +71,9 @@
 			// recurse through dbsets and references finding anything that uses an enum
 			var enumReferences = FindEnumReferences(context);
 
-			var sqlServerHandler = new SqlServerHandler
-			{
-				NameFieldLength = NameFieldLength,
-				TableNamePrefix = TableNamePrefix,
-				TableNameSuffix = TableNameSuffix,
-			};
-
-			// todo: fold the populate method into the create tables method, providing all the data to the db layer in one hit,
-			//  this will require merging the two sql callbacks into one signature
-
 			// for the list of enums generate and missing tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
 
-			// merge values into these tables
 			var lookups =
 				(from enm in enums
 				select new LookupData
@@ -93,7 +82,13 @@
 					Values = GetLookupValues(enm),
 				}).ToList();
 
-			sqlServerHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+			// todo: support MariaDb etc. Issue #16
+			IDbHandler dbHandler = new SqlServerHandler();
+			dbHandler.NameFieldLength = NameFieldLength;
+			dbHandler.TableNamePrefix = TableNamePrefix;
+			dbHandler.TableNameSuffix = TableNameSuffix;
+
+			dbHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
 
 		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)

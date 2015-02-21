@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="LookupGenerator\EnumGeneratorException.cs" />
     <Compile Include="LookupGenerator\EnumToLookup.cs" />
+    <Compile Include="LookupGenerator\IDbHandler.cs" />
     <Compile Include="LookupGenerator\IEnumToLookup.cs" />
     <Compile Include="LookupGenerator\EnumReference.cs" />
     <Compile Include="LookupGenerator\LookupData.cs" />

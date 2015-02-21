@@ -5,7 +5,7 @@
 	using System.Data.SqlClient;
 	using System.Text;
 
-	class SqlServerHandler
+	class SqlServerHandler : IDbHandler
 	{
 		/// <summary>
 		/// The size of the Name field that will be added to the generated lookup tables.
@@ -28,7 +28,7 @@
 		public string TableNameSuffix { get; set; }
 
 
-		internal void Apply(List<LookupData> lookups, IList<EnumReference> enumReferences, Action<string, IEnumerable<SqlParameter>> runSql)
+		public void Apply(List<LookupData> lookups, IList<EnumReference> enumReferences, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			CreateTables(lookups, (sql) => runSql(sql, null));
 			PopulateLookups(lookups, runSql);
