@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Text;
-
-namespace EfEnumToLookup.LookupGenerator
+﻿namespace EfEnumToLookup.LookupGenerator
 {
+	using System;
+	using System.Collections.Generic;
+	using System.Data.SqlClient;
+	using System.Text;
+
 	class SqlServerHandler
 	{
 		/// <summary>
@@ -52,33 +52,24 @@ namespace EfEnumToLookup.LookupGenerator
 			}
 		}
 
-		internal void PopulateLookups(IEnumerable<Type> enums, Action<string, IEnumerable<SqlParameter>> runSql)
+		internal void PopulateLookups(IEnumerable<LookupData> lookupData, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			foreach (var lookup in enums)
+			foreach (var lookup in lookupData)
 			{
 				PopulateLookup(lookup, runSql);
 			}
 		}
 
-		private void PopulateLookup(Type lookup, Action<string, IEnumerable<SqlParameter>> runSql)
+		private void PopulateLookup(LookupData lookup, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			if (!lookup.IsEnum)
-			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
-			}
-
 			var sb = new StringBuilder();
 			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
 			var parameters = new List<SqlParameter>();
 			int paramIndex = 0;
-			foreach (var value in Enum.GetValues(lookup))
+			foreach (var value in lookup.Values)
 			{
-				if (IsRuntimeOnly(value, lookup))
-				{
-					continue;
-				}
-				var id = (int)value;
-				var name = EnumName(value, lookup);
+				var id = value.Id;
+				var name = value.Name;
 				var idParamName = string.Format("id{0}", paramIndex++);
 				var nameParamName = string.Format("name{0}", paramIndex++);
 				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));

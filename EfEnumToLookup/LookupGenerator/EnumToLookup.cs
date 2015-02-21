@@ -68,7 +68,7 @@
 		///  context.Database.ExecuteSqlCommand() is used to apply changes.</param>
 		public void Apply(DbContext context)
 		{
-			// recurese through dbsets and references finding anything that uses an enum
+			// recurse through dbsets and references finding anything that uses an enum
 			var enumReferences = FindEnumReferences(context);
 
 			var sqlServerHandler = new SqlServerHandler
@@ -78,12 +78,22 @@
 				TableNameSuffix = TableNameSuffix,
 			};
 
-			// for the list of enums generate tables
+			// todo: fold the populate method into the create tables method, providing all the data to the db layer in one hit,
+			//  this will require merging the two sql callbacks into one signature
+
+			// for the list of enums generate and missing tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
 			sqlServerHandler.CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
 
-			// t-sql merge values into table
-			sqlServerHandler.PopulateLookups(enums, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
+			// merge values into these tables
+			var lookups =
+				from enm in enums
+				select new LookupData
+				{
+					Name = enm.Name,
+					Values = GetLookupValues(enm),
+				};
+			sqlServerHandler.PopulateLookups(lookups, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
 
 			// add fks from all referencing tables
 			sqlServerHandler.AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
@@ -120,6 +130,30 @@
 			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
 			return description == null ? null : description.Description;
 		}
+
+		private IList<LookupValue> GetLookupValues(Type lookup)
+		{
+			if (!lookup.IsEnum)
+			{
+				throw new ArgumentException("Lookup type must be an enum", "lookup");
+			}
+
+			var values = new List<LookupValue>();
+			foreach (var value in Enum.GetValues(lookup))
+			{
+				if (IsRuntimeOnly(value, lookup))
+				{
+					continue;
+				}
+				values.Add(new LookupValue
+				{
+					Id = (int)value,
+					Name = EnumName(value, lookup),
+				});
+			}
+			return values;
+		}
+
 
 		private static bool IsRuntimeOnly(object value, Type enumType)
 		{
