@@ -203,8 +203,14 @@ MERGE INTO [{0}] dst
 		{
 			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
-			// Get the part of the model that contains info about the actual CLR types
-			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
+			return FindReferences(metadata);
+		}
+
+		private static IList<EnumReference> FindReferences(MetadataWorkspace metadata)
+		{
+// Get the part of the model that contains info about the actual CLR types
+			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));
+				// OSpace = Object Space
 
 			var entities = metadata.GetItems<EntityType>(DataSpace.OSpace);
 
