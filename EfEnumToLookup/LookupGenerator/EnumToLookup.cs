@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.Core.Mapping;
-using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-
-namespace EfEnumToLookup.LookupGenerator
+﻿namespace EfEnumToLookup.LookupGenerator
 {
+	using System;
+	using System.Collections.Generic;
+	using System.ComponentModel;
+	using System.Data.Entity;
+	using System.Data.Entity.Infrastructure;
+	using System.Data.SqlClient;
+	using System.Linq;
+	using System.Reflection;
+	using System.Text;
+	using System.Text.RegularExpressions;
+
 	/// <summary>
 	/// Makes up for a missing feature in Entity Framework 6.1
 	/// Creates lookup tables and foreign key constraints based on the enums
@@ -29,7 +27,8 @@ namespace EfEnumToLookup.LookupGenerator
 	{
 		public EnumToLookup()
 		{
-			NameFieldLength = 255; // default
+			// set default behaviour, can be overridden by setting properties on object before calling Apply()
+			NameFieldLength = 255;
 			TableNamePrefix = "Enum_";
 			SplitWords = true;
 		}
@@ -69,79 +68,36 @@ namespace EfEnumToLookup.LookupGenerator
 		///  context.Database.ExecuteSqlCommand() is used to apply changes.</param>
 		public void Apply(DbContext context)
 		{
-			// recurese through dbsets and references finding anything that uses an enum
-			var enumReferences = FindReferences(context);
-			// for the list of enums generate tables
+			// recurse through dbsets and references finding anything that uses an enum
+			var enumReferences = FindEnumReferences(context);
+
+			// for the list of enums generate and missing tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
-			CreateTables(enums, (sql) => context.Database.ExecuteSqlCommand(sql));
-			// t-sql merge values into table
-			PopulateLookups(enums, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
-			// add fks from all referencing tables
-			AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
-		}
 
-		private void AddForeignKeys(IEnumerable<EnumReference> refs, Action<string> runSql)
-		{
-			foreach (var enumReference in refs)
-			{
-				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
-				var sql =
-					string.Format(
-						" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);",
-						fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name));
-				runSql(sql);
-			}
-		}
-
-		private void PopulateLookups(IEnumerable<Type> enums, Action<string, IEnumerable<SqlParameter>> runSql)
-		{
-			foreach (var lookup in enums)
-			{
-				PopulateLookup(lookup, runSql);
-			}
-		}
-
-		private void PopulateLookup(Type lookup, Action<string, IEnumerable<SqlParameter>> runSql)
-		{
-			if (!lookup.IsEnum)
-			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
-			}
-
-			var sb = new StringBuilder();
-			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
-			var parameters = new List<SqlParameter>();
-			int paramIndex = 0;
-			foreach (var value in Enum.GetValues(lookup))
-			{
-				if (IsRuntimeOnly(value, lookup))
+			var lookups =
+				(from enm in enums
+				select new LookupData
 				{
-					continue;
-				}
-				var id = (int)value;
-				var name = EnumName(value, lookup);
-				var idParamName = string.Format("id{0}", paramIndex++);
-				var nameParamName = string.Format("name{0}", paramIndex++);
-				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
-				parameters.Add(new SqlParameter(idParamName, id));
-				parameters.Add(new SqlParameter(nameParamName, name));
+					Name = enm.Name,
+					Values = GetLookupValues(enm),
+				}).ToList();
+
+			// todo: support MariaDb etc. Issue #16
+			IDbHandler dbHandler = new SqlServerHandler();
+			dbHandler.NameFieldLength = NameFieldLength;
+			dbHandler.TableNamePrefix = TableNamePrefix;
+			dbHandler.TableNameSuffix = TableNameSuffix;
+
+			dbHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+		}
+
+		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)
+		{
+			if (parameters == null)
+			{
+				return context.Database.ExecuteSqlCommand(sql);
 			}
-
-			sb.AppendLine(string.Format(@"
-MERGE INTO [{0}] dst
-	USING #lookups src ON src.Id = dst.Id
-	WHEN MATCHED AND src.Name <> dst.Name THEN
-		UPDATE SET Name = src.Name
-	WHEN NOT MATCHED THEN
-		INSERT (Id, Name)
-		VALUES (src.Id, src.Name)
-	WHEN NOT MATCHED BY SOURCE THEN
-		DELETE
-;"
-				, TableName(lookup.Name)));
-
-			sb.AppendLine("DROP TABLE #lookups;");
-			runSql(sb.ToString(), parameters);
+			return context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray());
 		}
 
 		private string EnumName(object value, Type lookup)
@@ -168,7 +124,7 @@ MERGE INTO [{0}] dst
 			return name;
 		}
 
-		private string DescriptionValue(object value, Type enumType)
+		private static string DescriptionValue(object value, Type enumType)
 		{
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
@@ -176,126 +132,43 @@ MERGE INTO [{0}] dst
 			return description == null ? null : description.Description;
 		}
 
-		private bool IsRuntimeOnly(object value, Type enumType)
+		private IEnumerable<LookupValue> GetLookupValues(Type lookup)
+		{
+			if (!lookup.IsEnum)
+			{
+				throw new ArgumentException("Lookup type must be an enum", "lookup");
+			}
+
+			var values = new List<LookupValue>();
+			foreach (var value in Enum.GetValues(lookup))
+			{
+				if (IsRuntimeOnly(value, lookup))
+				{
+					continue;
+				}
+				values.Add(new LookupValue
+				{
+					Id = (int)value,
+					Name = EnumName(value, lookup),
+				});
+			}
+			return values;
+		}
+
+
+		private static bool IsRuntimeOnly(object value, Type enumType)
 		{
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
 			return member.GetCustomAttributes(typeof(RuntimeOnlyAttribute)).Any();
 		}
 
-		private void CreateTables(IEnumerable<Type> enums, Action<string> runSql)
+		internal IList<EnumReference> FindEnumReferences(DbContext context)
 		{
-			foreach (var lookup in enums)
-			{
-				runSql(string.Format(
-					@"IF OBJECT_ID('{0}', 'U') IS NULL CREATE TABLE [{0}] (Id int PRIMARY KEY, Name nvarchar({1}));",
-					TableName(lookup.Name), NameFieldLength));
-			}
-		}
+			var metadataWorkspace = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
 
-		private string TableName(string enumName)
-		{
-			return string.Format("{0}{1}{2}", TableNamePrefix, enumName, TableNameSuffix);
-		}
-
-		internal IList<EnumReference> FindReferences(DbContext context)
-		{
-			var metadata = ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace;
-
-			// Get the part of the model that contains info about the actual CLR types
-			var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace)); // OSpace = Object Space
-
-			// find and return all the references to enum types
-			var enumReferences = (from entity in metadata.GetItems<EntityType>(DataSpace.OSpace)
-				from property in entity.Properties
-				where property.IsEnumType
-				select new EnumReference
-				{
-					ReferencingTable = GetTableName(metadata, entity),
-					ReferencingField = property.Name,
-					EnumType = objectItemCollection.GetClrType(property.EnumType),
-				});
-			return enumReferences
-				.Where(r => r.ReferencingTable != null) // filter out child-types in Table-per-Hierarchy model
-				.ToList();
-		}
-
-		private static string GetTableName(MetadataWorkspace metadata, EntityType entityType)
-		{
-			// refs:
-			// * http://romiller.com/2014/04/08/ef6-1-mapping-between-types-tables/
-			// * http://blogs.msdn.com/b/appfabriccat/archive/2010/10/22/metadataworkspace-reference-in-wcf-services.aspx
-			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
-
-			try
-			{
-				// Get the entity type from the model that maps to the CLR type
-				var entityTypes = metadata
-					.GetItems<EntityType>(DataSpace.OSpace) // OSpace = Object Space
-					.Where(e => e == entityType)
-					.ToList();
-				if (entityTypes.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} entities of type {1} found in mapping.", entityTypes.Count(), entityType));
-				}
-				var entityMetadata = entityTypes.Single();
-
-				// Get the entity set that uses this entity type
-				var containers = metadata
-					.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
-				if (containers.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} EntityContainer's found.", containers.Count()));
-				}
-				var container = containers.Single();
-
-				var entitySets = container
-					.EntitySets
-					.Where(s => s.ElementType.Name == entityMetadata.Name)
-					.ToList();
-				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be from the parent/base type.
-				if (!entitySets.Any())
-				{
-					return null;
-				}
-				if (entitySets.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format(
-						"{0} EntitySet's found for element type '{1}'.", entitySets.Count(), entityMetadata.Name));
-				}
-				var entitySet = entitySets.Single();
-
-				// Find the mapping between conceptual and storage model for this entity set
-				var entityContainerMappings = metadata.GetItems<EntityContainerMapping>(DataSpace.CSSpace); // CSSpace = Conceptual model to Storage model mappings
-				if (entityContainerMappings.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} EntityContainerMappings found.", entityContainerMappings.Count()));
-				}
-				var containerMapping = entityContainerMappings.Single();
-				var mappings = containerMapping.EntitySetMappings.Where(s => s.EntitySet == entitySet).ToList();
-				if (mappings.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format(
-						"{0} EntitySetMappings found for entitySet '{1}'.", mappings.Count(), entitySet.Name));
-				}
-				var mapping = mappings.Single();
-
-				// Find the storage entity set (table) that the entity is mapped to
-				var entityTypeMappings = mapping.EntityTypeMappings;
-				var entityTypeMapping = entityTypeMappings.First(); // using First() because Table-per-Hierarchy (TPH) produces multiple copies of the entity type mapping
-				var fragments = entityTypeMapping.Fragments;
-				if (fragments.Count() != 1)
-				{
-					throw new EnumGeneratorException(string.Format("{0} Fragments found.", fragments.Count()));
-				}
-				var table = fragments.Single().StoreEntitySet;
-				var tableName = (string)table.MetadataProperties["Table"].Value ?? table.Name;
-				return tableName;
-			}
-			catch (Exception exception)
-			{
-				throw new EnumGeneratorException(string.Format("Error getting table name for entity type '{0}'", entityType.Name), exception);
-			}
+			var metadataHandler = new MetadataHandler();
+			return metadataHandler.FindEnumReferences(metadataWorkspace);
 		}
 
 		internal IList<PropertyInfo> FindDbSets(Type contextType)

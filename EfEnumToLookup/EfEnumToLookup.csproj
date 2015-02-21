@@ -56,9 +56,14 @@
   <ItemGroup>
     <Compile Include="LookupGenerator\EnumGeneratorException.cs" />
     <Compile Include="LookupGenerator\EnumToLookup.cs" />
+    <Compile Include="LookupGenerator\IDbHandler.cs" />
     <Compile Include="LookupGenerator\IEnumToLookup.cs" />
     <Compile Include="LookupGenerator\EnumReference.cs" />
+    <Compile Include="LookupGenerator\LookupData.cs" />
+    <Compile Include="LookupGenerator\LookupValue.cs" />
+    <Compile Include="LookupGenerator\MetadataHandler.cs" />
     <Compile Include="LookupGenerator\RuntimeOnlyAttribute.cs" />
+    <Compile Include="LookupGenerator\SqlServerHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

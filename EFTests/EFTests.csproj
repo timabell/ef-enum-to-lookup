@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Model\Pedigree.cs" />
     <Compile Include="Model\Truck.cs" />
     <Compile Include="Model\Car.cs" />
     <Compile Include="Model\Vehicle.cs" />
@@ -68,6 +69,8 @@
     <Compile Include="Db\MagicContext.cs" />
     <Compile Include="Model\Constants.cs" />
     <Compile Include="Model\Echo.cs" />
+    <Compile Include="Model\Eon.cs" />
+    <Compile Include="Model\Geology.cs" />
     <Compile Include="Model\Heat.cs" />
     <Compile Include="Model\Importance.cs" />
     <Compile Include="Model\Pattern.cs" />

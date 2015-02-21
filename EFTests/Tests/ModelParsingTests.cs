@@ -26,7 +26,7 @@ namespace EFTests.Tests
 			IList<EnumReference> references;
 			using (var context = new MagicContext())
 			{
-				references = _enumToLookup.FindReferences(context);
+				references = _enumToLookup.FindEnumReferences(context);
 			}
 			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
 			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
@@ -34,8 +34,10 @@ namespace EFTests.Tests
 			Assert.IsNotNull(ears, "TehEars ref not found");
 			var echos = references.SingleOrDefault(r => r.ReferencingField == "EchoType");
 			Assert.IsNotNull(echos, "EchoType ref not found");
+			var eons = references.Count(r => r.EnumType == typeof(Eon));
+			Assert.AreEqual(2, eons, "Wrong number of Eon refs found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
-			Assert.AreEqual(8, references.Count);
+			Assert.AreEqual(11, references.Count);
 		}
 
 		[Test]
