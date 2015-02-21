@@ -236,11 +236,13 @@ MERGE INTO [{0}] dst
 			var references = new List<EnumReference>();
 			foreach (var edmProperty in properties)
 			{
+				var table = mappingFragment.StoreEntitySet.Table;
+
 				if (edmProperty.IsEnumType)
 				{
 					references.Add(new EnumReference
 					{
-						ReferencingTable = mappingFragment.StoreEntitySet.Table,
+						ReferencingTable = table,
 						ReferencingField = GetColumnName(mappingFragment, edmProperty),
 						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
 					});
@@ -256,7 +258,7 @@ MERGE INTO [{0}] dst
 						{
 							references.Add(new EnumReference
 							{
-								ReferencingTable = mappingFragment.StoreEntitySet.Table,
+								ReferencingTable = table,
 								ReferencingField = GetComplexColumnName(mappingFragment, edmProperty, nestedProperty),
 								EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
 							});
