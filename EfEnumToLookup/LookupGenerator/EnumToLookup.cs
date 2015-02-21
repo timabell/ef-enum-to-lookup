@@ -260,7 +260,7 @@ MERGE INTO [{0}] dst
 						select new EnumReference
 						{
 							ReferencingTable = table,
-							ReferencingField = GetComplexColumnName(mappingFragment, edmProperty, nestedProperty),
+							ReferencingField = GetColumnName(mappingFragment, edmProperty, nestedProperty),
 							EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
 						});
 				}
@@ -269,44 +269,50 @@ MERGE INTO [{0}] dst
 			return references;
 		}
 
-		private static string GetColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty)
+		/// <summary>
+		/// Gets the name of the column for the property from the metadata.
+		/// Set nestedProperty for the property of a complex type to lookup.
+		/// </summary>
+		/// <param name="mappingFragment">EF metadata for finding mappings.</param>
+		/// <param name="edmProperty">The of the model to find the column for (for simple types), or for complex types this is the containing complex type.</param>
+		/// <param name="nestedProperty">Only required to map complex types. The property of the complex type to find the column name for.</param>
+		/// <returns>The column name for the property</returns>
+		/// <exception cref="EnumGeneratorException">
+		/// </exception>
+		private static string GetColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty = null)
 		{
 			var propertyMapping = GetPropertyMapping(mappingFragment, edmProperty);
 
-			return GetColumnName(edmProperty, propertyMapping, propertyMapping);
+			if (nestedProperty != null)
+			{
+				var complexPropertyMapping = propertyMapping as ComplexPropertyMapping;
+				if (complexPropertyMapping == null)
+				{
+					throw new EnumGeneratorException(string.Format(
+						"Failed to cast complex property mapping for {0}.{1} to ComplexPropertyMapping", edmProperty, nestedProperty));
+				}
+				var complexTypeMappings = complexPropertyMapping.TypeMappings;
+				if (complexTypeMappings.Count() != 1)
+				{
+					throw new EnumGeneratorException(string.Format(
+						"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", complexTypeMappings.Count(), edmProperty, nestedProperty));
+				}
+				var complexTypeMapping = complexTypeMappings.Single();
+				var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
+				if (propertyMappings.Count() != 1)
+				{
+					throw new EnumGeneratorException(string.Format(
+						"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), edmProperty, nestedProperty));
+				}
+
+				propertyMapping = propertyMappings.Single();
+			}
+			return GetColumnName(edmProperty, propertyMapping);
 		}
 
-		private static string GetComplexColumnName(StructuralTypeMapping mappingFragment, EdmProperty edmProperty, EdmProperty nestedProperty)
+		private static string GetColumnName(EdmProperty edmProperty, PropertyMapping propertyMapping)
 		{
-			var propertyMapping = GetPropertyMapping(mappingFragment, edmProperty);
-
-			var complexPropertyMapping = propertyMapping as ComplexPropertyMapping;
-			if (complexPropertyMapping == null)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"Failed to cast complex property mapping for {0}.{1} to ComplexPropertyMapping", edmProperty, nestedProperty));
-			}
-			var complexTypeMappings = complexPropertyMapping.TypeMappings;
-			if (complexTypeMappings.Count() != 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", complexTypeMappings.Count(), edmProperty, nestedProperty));
-			}
-			var complexTypeMapping = complexTypeMappings.Single();
-			var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == nestedProperty.Name).ToList();
-			if (propertyMappings.Count() != 1)
-			{
-				throw new EnumGeneratorException(string.Format(
-					"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), edmProperty, nestedProperty));
-			}
-			var innerPropertyMapping = propertyMappings.Single();
-			return GetColumnName(edmProperty, innerPropertyMapping, innerPropertyMapping);
-		}
-
-		private static string GetColumnName(EdmProperty edmProperty, PropertyMapping scalarMapping,
-			PropertyMapping propertyMapping)
-		{
-			var colMapping = scalarMapping as ScalarPropertyMapping;
+			var colMapping = propertyMapping as ScalarPropertyMapping;
 			if (colMapping == null)
 			{
 				throw new EnumGeneratorException(string.Format(
