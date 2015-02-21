@@ -234,6 +234,7 @@ MERGE INTO [{0}] dst
 		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, MappingFragment mappingFragment, ObjectItemCollection objectItemCollection)
 		{
 			var references = new List<EnumReference>();
+
 			foreach (var edmProperty in properties)
 			{
 				var table = mappingFragment.StoreEntitySet.Table;
@@ -248,24 +249,23 @@ MERGE INTO [{0}] dst
 					});
 					continue;
 				}
+
 				if (edmProperty.IsComplexType)
 				{
 					// Note that complex types can't be nested (ref http://stackoverflow.com/a/20332503/10245 )
 					// so it's safe to not recurse even though the data model suggests you should have to.
-					foreach (var nestedProperty in edmProperty.ComplexType.Properties)
-					{
-						if (nestedProperty.IsEnumType)
+					references.AddRange(
+						from nestedProperty in edmProperty.ComplexType.Properties
+						where nestedProperty.IsEnumType
+						select new EnumReference
 						{
-							references.Add(new EnumReference
-							{
-								ReferencingTable = table,
-								ReferencingField = GetComplexColumnName(mappingFragment, edmProperty, nestedProperty),
-								EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
-							});
-						}
-					}
+							ReferencingTable = table,
+							ReferencingField = GetComplexColumnName(mappingFragment, edmProperty, nestedProperty),
+							EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
+						});
 				}
 			}
+
 			return references;
 		}
 
