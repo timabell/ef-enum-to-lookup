@@ -93,11 +93,20 @@
 					Values = GetLookupValues(enm),
 				}).ToList();
 
-			sqlServerHandler.CreateTables(lookups, (sql) => context.Database.ExecuteSqlCommand(sql));
-			sqlServerHandler.PopulateLookups(lookups, (sql, parameters) => context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray()));
+			sqlServerHandler.CreateTables(lookups, (sql) => ExecuteSqlCommand(context, sql));
+			sqlServerHandler.PopulateLookups(lookups, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 
 			// add fks from all referencing tables
-			sqlServerHandler.AddForeignKeys(enumReferences, (sql) => context.Database.ExecuteSqlCommand(sql));
+			sqlServerHandler.AddForeignKeys(enumReferences, (sql) => ExecuteSqlCommand(context, sql));
+		}
+
+		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)
+		{
+			if (parameters == null)
+			{
+				return context.Database.ExecuteSqlCommand(sql);
+			}
+			return context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray());
 		}
 
 		private string EnumName(object value, Type lookup)
