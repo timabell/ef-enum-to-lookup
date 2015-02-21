@@ -336,6 +336,10 @@ MERGE INTO [{0}] dst
 				}
 				var entityMetadata = entityTypes.Single();
 
+				// todo: map properly from object space to conceptual space
+				var OCSpace = metadata.GetItems(DataSpace.OCSpace);
+				//OCSpace.Where(oc => oc.)
+
 				// Get the entity set that uses this entity type
 				var containers = metadata
 					.GetItems<EntityContainer>(DataSpace.CSpace); // CSpace = Conceptual model
@@ -349,7 +353,8 @@ MERGE INTO [{0}] dst
 					.EntitySets
 					.Where(s => s.ElementType.Name == entityMetadata.Name)
 					.ToList();
-				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be from the parent/base type.
+
+				// Child types in Table-per-Hierarchy don't have any mapping so return null for the table name. Foreign key will be created from the base type.
 				if (!entitySets.Any())
 				{
 					return null;
