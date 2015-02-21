@@ -323,6 +323,8 @@ MERGE INTO [{0}] dst
 			// * http://msdn.microsoft.com/en-us/library/system.data.metadata.edm.dataspace.aspx - describes meaning of OSpace etc
 			// * http://stackoverflow.com/questions/22999330/mapping-from-iedmentity-to-clr
 
+			// todo: break this function down into manageable chunks
+
 			try
 			{
 				// Get the entity type from the model that maps to the CLR type
