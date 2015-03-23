@@ -79,6 +79,7 @@
 				select new LookupData
 				{
 					Name = enm.Name,
+					NumericType = enm.GetEnumUnderlyingType(),
 					Values = GetLookupValues(enm),
 				}).ToList();
 
@@ -146,9 +147,14 @@
 				{
 					continue;
 				}
+
+				// avoid cast error for byte enums by converting to int before using a cast
+				// https://github.com/timabell/ef-enum-to-lookup/issues/20
+				var numericValue = Convert.ChangeType(value, typeof(int));
+
 				values.Add(new LookupValue
 				{
-					Id = (int)value,
+					Id = (int)numericValue,
 					Name = EnumName(value, lookup),
 				});
 			}

@@ -16,5 +16,9 @@ namespace EFTests.Model
 
 		[Column("Lineage")]
 		public Pedigree Pedigree { get; set; }
+
+		public Fur BodyFur { get; set; }
+
+		public Fur? HeadFur { get; set; }
 	}
 }
