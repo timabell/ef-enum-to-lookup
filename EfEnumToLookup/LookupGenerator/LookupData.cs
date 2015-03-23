@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace EfEnumToLookup.LookupGenerator
@@ -9,5 +10,6 @@ namespace EfEnumToLookup.LookupGenerator
 	{
 		public string Name { get; set; }
 		public IEnumerable<LookupValue> Values { get; set; }
+		public Type NumericType { get; set; }
 	}
 }

@@ -79,6 +79,7 @@
 				select new LookupData
 				{
 					Name = enm.Name,
+					NumericType = enm.GetEnumUnderlyingType(),
 					Values = GetLookupValues(enm),
 				}).ToList();
 
