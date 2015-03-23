@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Model\Fur.cs" />
     <Compile Include="Model\Pedigree.cs" />
     <Compile Include="Model\Truck.cs" />
     <Compile Include="Model\Car.cs" />
