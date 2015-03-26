@@ -7,6 +7,13 @@ using System.Text.RegularExpressions;
 
 namespace EfEnumToLookup.LookupGenerator
 {
+	/// <summary>
+	/// Loops through the values in an enum type and gets the ids and names
+	/// for use in the generated lookup table.
+	/// Will use Description attribute on enum values if available for the
+	/// name, otherwise it'll use the name from code, optionally split into
+	/// words.
+	/// </summary>
 	internal class EnumParser
 	{
 		public EnumParser()
@@ -21,6 +28,12 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		public bool SplitWords { get; set; }
 
+		/// <summary>
+		/// Loops through the values in an enum type and gets the ids and names
+		/// for use in the generated lookup table.
+		/// </summary>
+		/// <param name="lookup">Enum to process</param>
+		/// <exception cref="System.ArgumentException">Lookup type must be an enum;lookup</exception>
 		public IEnumerable<LookupValue> GetLookupValues(Type lookup)
 		{
 			if (!lookup.IsEnum)
