@@ -32,7 +32,7 @@
 			// set default behaviour, can be overridden by setting properties on object before calling Apply()
 			NameFieldLength = 255;
 			TableNamePrefix = "Enum_";
-			_enumParser = new EnumParser(true);
+			_enumParser = new EnumParser { SplitWords = true };
 		}
 
 		/// <summary>

@@ -9,9 +9,10 @@ namespace EfEnumToLookup.LookupGenerator
 {
 	internal class EnumParser
 	{
-		public EnumParser(bool splitWords)
+		public EnumParser()
 		{
-			SplitWords = splitWords;
+			// default settings
+			SplitWords = true;
 		}
 
 		/// <summary>
