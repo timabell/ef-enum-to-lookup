@@ -21,6 +21,34 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		public bool SplitWords { get; set; }
 
+		public IEnumerable<LookupValue> GetLookupValues(Type lookup)
+		{
+			if (!lookup.IsEnum)
+			{
+				throw new ArgumentException("Lookup type must be an enum", "lookup");
+			}
+
+			var values = new List<LookupValue>();
+			foreach (var value in Enum.GetValues(lookup))
+			{
+				if (IsRuntimeOnly(value, lookup))
+				{
+					continue;
+				}
+
+				// avoid cast error for byte enums by converting to int before using a cast
+				// https://github.com/timabell/ef-enum-to-lookup/issues/20
+				var numericValue = Convert.ChangeType(value, typeof(int));
+
+				values.Add(new LookupValue
+				{
+					Id = (int)numericValue,
+					Name = EnumName(value),
+				});
+			}
+			return values;
+		}
+
 		private string EnumName(object value)
 		{
 			var description = EnumDescriptionValue(value);
@@ -61,34 +89,6 @@ namespace EfEnumToLookup.LookupGenerator
 			var member = enumType.GetMember(value.ToString()).First();
 			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
 			return description == null ? null : description.Description;
-		}
-
-		public IEnumerable<LookupValue> GetLookupValues(Type lookup)
-		{
-			if (!lookup.IsEnum)
-			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
-			}
-
-			var values = new List<LookupValue>();
-			foreach (var value in Enum.GetValues(lookup))
-			{
-				if (IsRuntimeOnly(value, lookup))
-				{
-					continue;
-				}
-
-				// avoid cast error for byte enums by converting to int before using a cast
-				// https://github.com/timabell/ef-enum-to-lookup/issues/20
-				var numericValue = Convert.ChangeType(value, typeof(int));
-
-				values.Add(new LookupValue
-				{
-					Id = (int)numericValue,
-					Name = EnumName(value),
-				});
-			}
-			return values;
 		}
 
 		private static bool IsRuntimeOnly(object value, Type enumType)
