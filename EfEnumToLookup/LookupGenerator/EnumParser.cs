@@ -29,10 +29,9 @@ namespace EfEnumToLookup.LookupGenerator
 			}
 
 			var values = new List<LookupValue>();
-			foreach (var value in Enum.GetValues(lookup))
+			foreach (Enum value in Enum.GetValues(lookup))
 			{
-				Enum enumValue = (Enum)value;
-				if (IsRuntimeOnly(value, lookup))
+				if (IsRuntimeOnly(value))
 				{
 					continue;
 				}
@@ -44,7 +43,7 @@ namespace EfEnumToLookup.LookupGenerator
 				values.Add(new LookupValue
 				{
 					Id = (int)numericValue,
-					Name = EnumName(enumValue),
+					Name = EnumName(value),
 				});
 			}
 			return values;
@@ -92,8 +91,10 @@ namespace EfEnumToLookup.LookupGenerator
 			return description == null ? null : description.Description;
 		}
 
-		private static bool IsRuntimeOnly(object value, Type enumType)
+		private static bool IsRuntimeOnly(Enum value)
 		{
+			var enumType = value.GetType();
+
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
 			return member.GetCustomAttributes(typeof(RuntimeOnlyAttribute)).Any();
