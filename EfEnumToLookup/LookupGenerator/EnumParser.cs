@@ -82,7 +82,7 @@ namespace EfEnumToLookup.LookupGenerator
 			var enumType = value.GetType();
 			if (!enumType.IsEnum)
 			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
+				throw new ArgumentException("Lookup type must be an enum", "value");
 			}
 
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
