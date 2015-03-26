@@ -84,6 +84,7 @@
     <Compile Include="Model\Rabbit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Db\TestInitializer.cs" />
+    <Compile Include="Tests\EnumParserTests.cs" />
     <Compile Include="Tests\ModelParsingTests.cs" />
     <Compile Include="Tests\TestConfiguration.cs" />
     <Compile Include="Tests\TestStuff.cs" />
