@@ -25,19 +25,25 @@
 	/// </summary>
 	public class EnumToLookup : IEnumToLookup
 	{
+		private readonly EnumParser _enumParser;
+
 		public EnumToLookup()
 		{
 			// set default behaviour, can be overridden by setting properties on object before calling Apply()
 			NameFieldLength = 255;
 			TableNamePrefix = "Enum_";
-			SplitWords = true;
+			_enumParser = new EnumParser(true);
 		}
 
 		/// <summary>
 		/// If set to true (default) enum names will have spaces inserted between
 		/// PascalCase words, e.g. enum SomeValue is stored as "Some Value".
 		/// </summary>
-		public bool SplitWords { get; set; }
+		public bool SplitWords
+		{
+			set { _enumParser.SplitWords = value; }
+			get { return _enumParser.SplitWords; }
+		}
 
 		/// <summary>
 		/// The size of the Name field that will be added to the generated lookup tables.
@@ -80,7 +86,7 @@
 				{
 					Name = enm.Name,
 					NumericType = enm.GetEnumUnderlyingType(),
-					Values = GetLookupValues(enm),
+					Values = _enumParser.GetLookupValues(enm),
 				}).ToList();
 
 			// todo: support MariaDb etc. Issue #16
@@ -101,83 +107,6 @@
 			return context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray());
 		}
 
-		private string EnumName(object value)
-		{
-			var description = EnumDescriptionValue(value);
-			if (description != null)
-			{
-				return description;
-			}
-
-			var name = value.ToString();
-
-			if (SplitWords)
-			{
-				return SplitCamelCase(name);
-			}
-			return name;
-		}
-
-		private static string SplitCamelCase(string name)
-		{
-			// http://stackoverflow.com/questions/773303/splitting-camelcase/25876326#25876326
-			name = Regex.Replace(name, "(?<=[a-z])([A-Z])", " $1", RegexOptions.Compiled);
-			return name;
-		}
-
-		/// <summary>
-		/// Returns the value of the DescriptionAttribute for an enum value,
-		/// or null if there isn't one.
-		/// </summary>
-		private static string EnumDescriptionValue(object value)
-		{
-			var enumType = value.GetType();
-			if (!enumType.IsEnum)
-			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
-			}
-
-			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
-			var member = enumType.GetMember(value.ToString()).First();
-			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
-			return description == null ? null : description.Description;
-		}
-
-		private IEnumerable<LookupValue> GetLookupValues(Type lookup)
-		{
-			if (!lookup.IsEnum)
-			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
-			}
-
-			var values = new List<LookupValue>();
-			foreach (var value in Enum.GetValues(lookup))
-			{
-				if (IsRuntimeOnly(value, lookup))
-				{
-					continue;
-				}
-
-				// avoid cast error for byte enums by converting to int before using a cast
-				// https://github.com/timabell/ef-enum-to-lookup/issues/20
-				var numericValue = Convert.ChangeType(value, typeof(int));
-
-				values.Add(new LookupValue
-				{
-					Id = (int)numericValue,
-					Name = EnumName(value),
-				});
-			}
-			return values;
-		}
-
-
-		private static bool IsRuntimeOnly(object value, Type enumType)
-		{
-			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
-			var member = enumType.GetMember(value.ToString()).First();
-			return member.GetCustomAttributes(typeof(RuntimeOnlyAttribute)).Any();
-		}
 
 		internal IList<EnumReference> FindEnumReferences(DbContext context)
 		{
