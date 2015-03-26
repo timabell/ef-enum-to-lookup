@@ -33,6 +33,19 @@ namespace EFTests.Tests
 			Assert.AreEqual("Foo Bar", result.Single().Name);
 		}
 
+		[Test]
+		public void ReadsByteEnum()
+		{
+			// arrange
+			var parser = new EnumParser { SplitWords = false };
+
+			// act
+			var result = parser.GetLookupValues(typeof(ByteEnum));
+
+			// assert
+			Assert.AreEqual("FooBar", result.Single().Name);
+		}
+
 
 		[Test]
 		public void ReadsDecoratedName()
@@ -48,6 +61,13 @@ namespace EFTests.Tests
 		}
 
 		private enum BareEnum
+		{
+			// ReSharper disable once UnusedMember.Local
+			// used by test suite
+			FooBar
+		}
+
+		private enum ByteEnum : byte
 		{
 			// ReSharper disable once UnusedMember.Local
 			// used by test suite
