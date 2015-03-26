@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFTests", "EFTests\EFTests.csproj", "{DED8AB21-6D20-43F6-B9A7-522D63F34423}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EfEnumToLookupTests", "EfEnumToLookupTests\EfEnumToLookupTests.csproj", "{DED8AB21-6D20-43F6-B9A7-522D63F34423}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EfEnumToLookup", "EfEnumToLookup\EfEnumToLookup.csproj", "{E6D4F1FB-D017-4BE2-AD13-90153BF479B1}"
 EndProject
