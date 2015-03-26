@@ -80,8 +80,8 @@
 			// for the list of enums generate and missing tables
 			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
 
-			var lookups =
-				(from enm in enums
+			var lookups = (
+				from enm in enums
 				select new LookupData
 				{
 					Name = enm.Name,
