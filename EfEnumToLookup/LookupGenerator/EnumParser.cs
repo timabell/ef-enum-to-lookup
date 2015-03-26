@@ -62,6 +62,12 @@ namespace EfEnumToLookup.LookupGenerator
 			return values;
 		}
 
+		/// <summary>
+		/// Gets the string to store in the lookup table for the specified
+		/// enum value. Will use the DescriptionAttribute of the value
+		/// if available, otherwise will use the value's name, optionally
+		/// split into words.
+		/// </summary>
 		private string EnumName(Enum value)
 		{
 			var description = EnumDescriptionValue(value);
