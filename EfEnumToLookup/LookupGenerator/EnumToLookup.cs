@@ -101,9 +101,9 @@
 			return context.Database.ExecuteSqlCommand(sql, parameters.Cast<object>().ToArray());
 		}
 
-		private string EnumName(object value, Type lookup)
+		private string EnumName(object value)
 		{
-			var description = EnumDescriptionValue(value, lookup);
+			var description = EnumDescriptionValue(value);
 			if (description != null)
 			{
 				return description;
@@ -129,8 +129,14 @@
 		/// Returns the value of the DescriptionAttribute for an enum value,
 		/// or null if there isn't one.
 		/// </summary>
-		private static string EnumDescriptionValue(object value, Type enumType)
+		private static string EnumDescriptionValue(object value)
 		{
+			var enumType = value.GetType();
+			if (!enumType.IsEnum)
+			{
+				throw new ArgumentException("Lookup type must be an enum", "lookup");
+			}
+
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
 			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
@@ -159,7 +165,7 @@
 				values.Add(new LookupValue
 				{
 					Id = (int)numericValue,
-					Name = EnumName(value, lookup),
+					Name = EnumName(value),
 				});
 			}
 			return values;
