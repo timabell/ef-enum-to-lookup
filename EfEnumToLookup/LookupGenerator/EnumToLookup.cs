@@ -103,7 +103,7 @@
 
 		private string EnumName(object value, Type lookup)
 		{
-			var description = DescriptionValue(value, lookup);
+			var description = EnumDescriptionValue(value, lookup);
 			if (description != null)
 			{
 				return description;
@@ -125,7 +125,11 @@
 			return name;
 		}
 
-		private static string DescriptionValue(object value, Type enumType)
+		/// <summary>
+		/// Returns the value of the DescriptionAttribute for an enum value,
+		/// or null if there isn't one.
+		/// </summary>
+		private static string EnumDescriptionValue(object value, Type enumType)
 		{
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
