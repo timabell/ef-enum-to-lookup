@@ -31,6 +31,7 @@ namespace EfEnumToLookup.LookupGenerator
 			var values = new List<LookupValue>();
 			foreach (var value in Enum.GetValues(lookup))
 			{
+				Enum enumValue = (Enum)value;
 				if (IsRuntimeOnly(value, lookup))
 				{
 					continue;
@@ -43,13 +44,13 @@ namespace EfEnumToLookup.LookupGenerator
 				values.Add(new LookupValue
 				{
 					Id = (int)numericValue,
-					Name = EnumName(value),
+					Name = EnumName(enumValue),
 				});
 			}
 			return values;
 		}
 
-		private string EnumName(object value)
+		private string EnumName(Enum value)
 		{
 			var description = EnumDescriptionValue(value);
 			if (description != null)
@@ -77,7 +78,7 @@ namespace EfEnumToLookup.LookupGenerator
 		/// Returns the value of the DescriptionAttribute for an enum value,
 		/// or null if there isn't one.
 		/// </summary>
-		private static string EnumDescriptionValue(object value)
+		private static string EnumDescriptionValue(Enum value)
 		{
 			var enumType = value.GetType();
 			if (!enumType.IsEnum)
