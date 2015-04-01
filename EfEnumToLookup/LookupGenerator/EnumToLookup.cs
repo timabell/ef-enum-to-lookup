@@ -76,6 +76,13 @@
 		{
 			var model = BuildModelFromContext(context);
 
+			var dbHandler = GetDbHandler();
+
+			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+		}
+
+		private IDbHandler GetDbHandler()
+		{
 			// todo: support MariaDb etc. Issue #16
 
 			IDbHandler dbHandler = new SqlServerHandler
@@ -84,8 +91,7 @@
 				TableNamePrefix = TableNamePrefix,
 				TableNameSuffix = TableNameSuffix,
 			};
-
-			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+			return dbHandler;
 		}
 
 		private LookupDbModel BuildModelFromContext(DbContext context)
