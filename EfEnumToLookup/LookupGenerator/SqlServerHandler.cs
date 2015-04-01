@@ -42,6 +42,7 @@
 		private string BuildSql(LookupDbModel model)
 		{
 			var sql = new StringBuilder();
+			sql.AppendLine("set nocount on;");
 			sql.AppendLine("set xact_abort on; -- rollback on error");
 			sql.AppendLine("begin tran;");
 			sql.AppendLine(CreateTables(model.Lookups));
