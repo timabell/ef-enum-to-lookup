@@ -67,16 +67,17 @@ end",
 
 		private void PopulateLookups(IEnumerable<LookupData> lookupData, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
+			runSql(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength), null);
 			foreach (var lookup in lookupData)
 			{
 				PopulateLookup(lookup, useParameters, runSql);
 			}
+			runSql("DROP TABLE #lookups;", null);
 		}
 
 		private void PopulateLookup(LookupData lookup, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			var sb = new StringBuilder();
-			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
 			var parameters = new List<SqlParameter>();
 			int paramIndex = 0;
 			foreach (var value in lookup.Values)
@@ -110,8 +111,8 @@ MERGE INTO [{0}] dst
 ;"
 				, TableName(lookup.Name)));
 
-			sb.AppendLine("DROP TABLE #lookups;");
 			runSql(sb.ToString(), parameters);
+			runSql("TRUNCATE TABLE #lookups;", null);
 		}
 
 		private string SanitizeSqlString(string value)
