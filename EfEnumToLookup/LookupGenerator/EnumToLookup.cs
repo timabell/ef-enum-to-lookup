@@ -74,7 +74,23 @@
 		///  context.Database.ExecuteSqlCommand() is used to apply changes.</param>
 		public void Apply(DbContext context)
 		{
-			// recurse through dbsets and references finding anything that uses an enum
+			var model = BuildModelFromContext(context);
+
+			// todo: support MariaDb etc. Issue #16
+
+			IDbHandler dbHandler = new SqlServerHandler
+			{
+				NameFieldLength = NameFieldLength,
+				TableNamePrefix = TableNamePrefix,
+				TableNameSuffix = TableNameSuffix,
+			};
+
+			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+		}
+
+		private LookupDbModel BuildModelFromContext(DbContext context)
+		{
+// recurse through dbsets and references finding anything that uses an enum
 			var enumReferences = FindEnumReferences(context);
 
 			// for the list of enums generate and missing tables
@@ -94,17 +110,7 @@
 				Lookups = lookups,
 				References = enumReferences,
 			};
-
-			// todo: support MariaDb etc. Issue #16
-
-			IDbHandler dbHandler = new SqlServerHandler
-			{
-				NameFieldLength = NameFieldLength,
-				TableNamePrefix = TableNamePrefix,
-				TableNameSuffix = TableNameSuffix,
-			};
-
-			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+			return model;
 		}
 
 		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)
