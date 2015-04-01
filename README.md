@@ -32,6 +32,14 @@ can be run in the test project project "[ExampleUsage](ExampleUsage)" if you wan
 	enumToLookup.NameFieldLength = 42; // optional, example of how to override default values
 	enumToLookup.Apply(context);
 
+### Creating sql scripts
+
+If you can't point this library at your production database and let it make changes then you may need to generate sql in advance. As of v1.7.0 you can do this by running
+
+	var migrationSql = enumToLookup.GenerateMigrationSql(context);
+
+instead of `Apply()` (or as well if you like).
+
 Contributing
 ------------
 
