@@ -90,10 +90,13 @@
 				}).ToList();
 
 			// todo: support MariaDb etc. Issue #16
-			IDbHandler dbHandler = new SqlServerHandler();
-			dbHandler.NameFieldLength = NameFieldLength;
-			dbHandler.TableNamePrefix = TableNamePrefix;
-			dbHandler.TableNameSuffix = TableNameSuffix;
+
+			IDbHandler dbHandler = new SqlServerHandler
+			{
+				NameFieldLength = NameFieldLength,
+				TableNamePrefix = TableNamePrefix,
+				TableNameSuffix = TableNameSuffix,
+			};
 
 			dbHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
