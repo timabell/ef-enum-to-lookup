@@ -24,6 +24,6 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		string TableNameSuffix { get; set; }
 
-		void Apply(List<LookupData> lookups, IList<EnumReference> enumReferences, Action<string, IEnumerable<SqlParameter>> runSql);
+		void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql);
 	}
 }

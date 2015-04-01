@@ -89,6 +89,12 @@
 					Values = _enumParser.GetLookupValues(enm),
 				}).ToList();
 
+			var model = new LookupDbModel
+			{
+				Lookups = lookups,
+				References = enumReferences,
+			};
+
 			// todo: support MariaDb etc. Issue #16
 
 			IDbHandler dbHandler = new SqlServerHandler
@@ -98,7 +104,7 @@
 				TableNameSuffix = TableNameSuffix,
 			};
 
-			dbHandler.Apply(lookups, enumReferences, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
 
 		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)

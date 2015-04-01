@@ -28,11 +28,11 @@
 		public string TableNameSuffix { get; set; }
 
 
-		public void Apply(List<LookupData> lookups, IList<EnumReference> enumReferences, Action<string, IEnumerable<SqlParameter>> runSql)
+		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			CreateTables(lookups, (sql) => runSql(sql, null));
-			PopulateLookups(lookups, runSql);
-			AddForeignKeys(enumReferences, (sql) => runSql(sql, null));
+			CreateTables(model.Lookups, (sql) => runSql(sql, null));
+			PopulateLookups(model.Lookups, runSql);
+			AddForeignKeys(model.References, (sql) => runSql(sql, null));
 		}
 
 		private void CreateTables(IEnumerable<LookupData> enums, Action<string> runSql)
