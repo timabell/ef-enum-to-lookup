@@ -88,21 +88,21 @@ end
 			var sql = new StringBuilder();
 			sql.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
 			parameters = new List<SqlParameter>();
+			var paramIndex = 0; // parameters have to be numbered across the whole batch
 			foreach (var lookup in lookupData)
 			{
 				IList<SqlParameter> batchParameters;
-				sql.AppendLine(PopulateLookup(lookup, useParameters, out batchParameters));
+				sql.AppendLine(PopulateLookup(lookup, useParameters, out batchParameters, ref paramIndex));
 				parameters.AddRange(batchParameters);
 			}
 			sql.AppendLine("DROP TABLE #lookups;");
 			return sql.ToString();
 		}
 
-		private string PopulateLookup(LookupData lookup, bool useParameters, out IList<SqlParameter> parameters)
+		private string PopulateLookup(LookupData lookup, bool useParameters, out IList<SqlParameter> parameters, ref int paramIndex)
 		{
 			var sql = new StringBuilder();
 			parameters = new List<SqlParameter>();
-			int paramIndex = 0;
 			foreach (var value in lookup.Values)
 			{
 				var id = value.Id;
