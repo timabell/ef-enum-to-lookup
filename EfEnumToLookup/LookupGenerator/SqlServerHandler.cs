@@ -31,20 +31,20 @@
 		public void Apply(LookupDbModel model, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			// build up a big sql string of everything and then run it
-			var sb = new StringBuilder();
-			sb.AppendLine(CreateTables(model.Lookups));
+			var sql = new StringBuilder();
+			sql.AppendLine(CreateTables(model.Lookups));
 			IList<SqlParameter> parameters;
-			sb.AppendLine(PopulateLookups(model.Lookups, useParameters, out parameters));
-			sb.AppendLine(AddForeignKeys(model.References));
-			runSql(sb.ToString(), parameters);
+			sql.AppendLine(PopulateLookups(model.Lookups, useParameters, out parameters));
+			sql.AppendLine(AddForeignKeys(model.References));
+			runSql(sql.ToString(), parameters);
 		}
 
 		private string CreateTables(IEnumerable<LookupData> enums)
 		{
-			var sb = new StringBuilder();
+			var sql = new StringBuilder();
 			foreach (var lookup in enums)
 			{
-				sb.AppendFormat(
+				sql.AppendFormat(
 					@"IF OBJECT_ID('{0}', 'U') IS NULL
 begin
 	CREATE TABLE [{0}] (Id {2} PRIMARY KEY, Name nvarchar({1}));
@@ -53,22 +53,22 @@ begin
 end\r\n",
 					TableName(lookup.Name), NameFieldLength, NumericSqlType(lookup.NumericType));
 			}
-			return sb.ToString();
+			return sql.ToString();
 		}
 
 		private string AddForeignKeys(IEnumerable<EnumReference> refs)
 		{
-			var sb = new StringBuilder();
+			var sql = new StringBuilder();
 			foreach (var enumReference in refs)
 			{
 				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
 
-				sb.AppendFormat(
+				sql.AppendFormat(
 					" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);\r\n",
 					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name)
 				);
 			}
-			return sb.ToString();
+			return sql.ToString();
 		}
 
 		private string PopulateLookups(IList<LookupData> lookupData, bool useParameters, out IList<SqlParameter> parameters)
@@ -85,7 +85,7 @@ end\r\n",
 
 		private void PopulateLookup(LookupData lookup, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			var sb = new StringBuilder();
+			var sql = new StringBuilder();
 			var parameters = new List<SqlParameter>();
 			int paramIndex = 0;
 			foreach (var value in lookup.Values)
@@ -96,17 +96,17 @@ end\r\n",
 				var nameParamName = string.Format("name{0}", paramIndex++);
 				if (useParameters)
 				{
-					sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
+					sql.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
 				}
 				else
 				{
-					sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');", id, SanitizeSqlString(name)));
+					sql.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');", id, SanitizeSqlString(name)));
 				}
 				parameters.Add(new SqlParameter(idParamName, id));
 				parameters.Add(new SqlParameter(nameParamName, name));
 			}
 
-			sb.AppendLine(string.Format(@"
+			sql.AppendLine(string.Format(@"
 MERGE INTO [{0}] dst
 	USING #lookups src ON src.Id = dst.Id
 	WHEN MATCHED AND src.Name <> dst.Name THEN
@@ -119,7 +119,7 @@ MERGE INTO [{0}] dst
 ;"
 				, TableName(lookup.Name)));
 
-			runSql(sb.ToString(), parameters);
+			runSql(sql.ToString(), parameters);
 			runSql("TRUNCATE TABLE #lookups;", null);
 		}
 
