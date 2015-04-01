@@ -44,7 +44,7 @@
 			var sql = new StringBuilder();
 			sql.AppendLine(CreateTables(model.Lookups));
 			sql.AppendLine(PopulateLookups(model.Lookups));
-			sql.AppendLine(AddForeignKeys(model.References));
+			sql.Append(AddForeignKeys(model.References));
 			return sql.ToString();
 		}
 
