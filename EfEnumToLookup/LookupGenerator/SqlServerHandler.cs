@@ -30,22 +30,20 @@
 
 		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			List<SqlParameter> parameters;
-			var sql = BuildSql(model, false, out parameters);
+			var sql = BuildSql(model);
 			runSql(sql, null);
 		}
 
 		public string GenerateMigrationSql(LookupDbModel model)
 		{
-			List<SqlParameter> parameters;
-			return BuildSql(model, false, out parameters);
+			return BuildSql(model);
 		}
 
-		private string BuildSql(LookupDbModel model, bool useParameters, out List<SqlParameter> parameters)
+		private string BuildSql(LookupDbModel model)
 		{
 			var sql = new StringBuilder();
 			sql.AppendLine(CreateTables(model.Lookups));
-			sql.AppendLine(PopulateLookups(model.Lookups, useParameters, out parameters));
+			sql.AppendLine(PopulateLookups(model.Lookups));
 			sql.AppendLine(AddForeignKeys(model.References));
 			return sql.ToString();
 		}
@@ -83,42 +81,24 @@ end
 			return sql.ToString();
 		}
 
-		private string PopulateLookups(IEnumerable<LookupData> lookupData, bool useParameters, out List<SqlParameter> parameters)
+		private string PopulateLookups(IEnumerable<LookupData> lookupData)
 		{
 			var sql = new StringBuilder();
 			sql.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
-			parameters = new List<SqlParameter>();
-			var paramIndex = 0; // parameters have to be numbered across the whole batch
 			foreach (var lookup in lookupData)
 			{
-				IList<SqlParameter> batchParameters;
-				sql.AppendLine(PopulateLookup(lookup, useParameters, out batchParameters, ref paramIndex));
-				parameters.AddRange(batchParameters);
+				sql.AppendLine(PopulateLookup(lookup));
 			}
 			sql.AppendLine("DROP TABLE #lookups;");
 			return sql.ToString();
 		}
 
-		private string PopulateLookup(LookupData lookup, bool useParameters, out IList<SqlParameter> parameters, ref int paramIndex)
+		private string PopulateLookup(LookupData lookup)
 		{
 			var sql = new StringBuilder();
-			parameters = new List<SqlParameter>();
 			foreach (var value in lookup.Values)
 			{
-				var id = value.Id;
-				var name = value.Name;
-				var idParamName = string.Format("id{0}", paramIndex++);
-				var nameParamName = string.Format("name{0}", paramIndex++);
-				if (useParameters)
-				{
-					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});\r\n", idParamName, nameParamName);
-					parameters.Add(new SqlParameter(idParamName, id));
-					parameters.Add(new SqlParameter(nameParamName, name));
-				}
-				else
-				{
-					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');\r\n", id, SanitizeSqlString(name));
-				}
+				sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');\r\n", value.Id, SanitizeSqlString(value.Name));
 			}
 
 			sql.AppendLine(string.Format(@"
@@ -138,7 +118,7 @@ MERGE INTO [{0}] dst
 			return sql.ToString();
 		}
 
-		private string SanitizeSqlString(string value)
+		private static string SanitizeSqlString(string value)
 		{
 			return value.Replace("'", "''");
 		}
