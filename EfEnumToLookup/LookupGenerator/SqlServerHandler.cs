@@ -28,15 +28,26 @@
 		public string TableNameSuffix { get; set; }
 
 
-		public void Apply(LookupDbModel model, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
+		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
-			// build up a big sql string of everything and then run it
+			List<SqlParameter> parameters;
+			var sql = BuildSql(model, true, out parameters);
+			runSql(sql, parameters);
+		}
+
+		public string GenerateMigrationSql(LookupDbModel model)
+		{
+			List<SqlParameter> parameters;
+			return BuildSql(model, false, out parameters);
+		}
+
+		private string BuildSql(LookupDbModel model, bool useParameters, out List<SqlParameter> parameters)
+		{
 			var sql = new StringBuilder();
 			sql.AppendLine(CreateTables(model.Lookups));
-			List<SqlParameter> parameters;
 			sql.AppendLine(PopulateLookups(model.Lookups, useParameters, out parameters));
 			sql.AppendLine(AddForeignKeys(model.References));
-			runSql(sql.ToString(), parameters);
+			return sql.ToString();
 		}
 
 		private string CreateTables(IEnumerable<LookupData> enums)
