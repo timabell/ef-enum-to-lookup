@@ -19,13 +19,31 @@ namespace ExampleUsage
 	[TestFixture]
 	public class EnumExample
 	{
+		[SetUp]
+		public void Setup()
+		{
+			Database.SetInitializer(new DropCreateDatabaseAlways<MyDbContext>());
+		}
+
 		[Test]
-		public void DoStuff()
+		public void ExampleOfUsingApply()
 		{
 			using (var context = new MyDbContext())
 			{
 				var enumToLookup = new EnumToLookup();
 				enumToLookup.NameFieldLength = 42; // optional, example of how to override default values
+
+				// This would normally be run inside either a db initializer Seed()
+				// or the migration Seed() method which both provide access to a context.
+				enumToLookup.Apply(context);
+			}
+		}
+
+		[Test] public void ExampleOfGeneratingSql()
+		{
+			using (var context = new MyDbContext())
+			{
+				var enumToLookup = new EnumToLookup();
 
 				// if you need to get at the raw sql to run a migration separately then use:
 				var migrationSql = enumToLookup.GenerateMigrationSql(context);
@@ -33,10 +51,8 @@ namespace ExampleUsage
 				// the purpose of demonstration we'll write it to the console instead:
 				Console.Out.WriteLine(migrationSql);
 
-				// otherwise let the library make the changes directly to the database
-				// This would normally be run inside either a db initializer Seed()
-				// or the migration Seed() method which both provide access to a context.
-				enumToLookup.Apply(context);
+				// at some point you'd then run the sql (probably not like this, but this serves as a test that it's working)
+				context.Database.ExecuteSqlCommand(migrationSql);
 			}
 		}
 	}
@@ -56,6 +72,7 @@ namespace ExampleUsage
 	{
 		public int Id { get; set; }
 		public Size Size { get; set; }
+		public Shape Shape { get; set; }
 	}
 
 	/// <summary>
@@ -77,5 +94,11 @@ namespace ExampleUsage
 
 		[RuntimeOnly] // this won't exist in the database, handy to prevent unwanted data creeping in (enforced by foreign key constraint).
 		Undecided
+	}
+
+	public enum Shape
+	{
+		Square,
+		Round
 	}
 }
