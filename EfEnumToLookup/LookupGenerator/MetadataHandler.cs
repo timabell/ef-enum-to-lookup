@@ -49,11 +49,10 @@
 		private static IEnumerable<EnumReference> ProcessEdmProperties(IEnumerable<EdmProperty> properties, MappingFragment mappingFragment, ObjectItemCollection objectItemCollection)
 		{
 			var references = new List<EnumReference>();
+			var table = mappingFragment.StoreEntitySet.Table;
 
 			foreach (var edmProperty in properties)
 			{
-				var table = mappingFragment.StoreEntitySet.Table;
-
 				if (edmProperty.IsEnumType)
 				{
 					references.Add(new EnumReference
