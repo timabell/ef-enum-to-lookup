@@ -78,7 +78,7 @@
 
 			var dbHandler = GetDbHandler();
 
-			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
+			dbHandler.Apply(model, true, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
 
 		/// <summary>
@@ -98,7 +98,7 @@
 
 			var sb = new StringBuilder();
 
-			dbHandler.Apply(model, (sql, parameters) => sb.Append(sql));
+			dbHandler.Apply(model, false, (sql, parameters) => sb.AppendLine(sql));
 
 			return sb.ToString();
 		}

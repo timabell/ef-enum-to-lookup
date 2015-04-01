@@ -65,6 +65,8 @@ namespace ExampleUsage
 	{
 		Small = 1, //db friendly id
 
+		// this is only fully qualified because of a name clash with NUnit, you wouldn't normally need to.
+		[System.ComponentModel.Description("It's average")] // example of apostrophe that would need escaping in sql
 		Medium,
 
 		ReallyVeryBig,

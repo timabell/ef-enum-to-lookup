@@ -28,10 +28,10 @@
 		public string TableNameSuffix { get; set; }
 
 
-		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
+		public void Apply(LookupDbModel model, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			CreateTables(model.Lookups, (sql) => runSql(sql, null));
-			PopulateLookups(model.Lookups, runSql);
+			PopulateLookups(model.Lookups, useParameters, runSql);
 			AddForeignKeys(model.References, (sql) => runSql(sql, null));
 		}
 
@@ -65,15 +65,15 @@ end",
 			}
 		}
 
-		private void PopulateLookups(IEnumerable<LookupData> lookupData, Action<string, IEnumerable<SqlParameter>> runSql)
+		private void PopulateLookups(IEnumerable<LookupData> lookupData, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			foreach (var lookup in lookupData)
 			{
-				PopulateLookup(lookup, runSql);
+				PopulateLookup(lookup, useParameters, runSql);
 			}
 		}
 
-		private void PopulateLookup(LookupData lookup, Action<string, IEnumerable<SqlParameter>> runSql)
+		private void PopulateLookup(LookupData lookup, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
@@ -85,7 +85,14 @@ end",
 				var name = value.Name;
 				var idParamName = string.Format("id{0}", paramIndex++);
 				var nameParamName = string.Format("name{0}", paramIndex++);
-				sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
+				if (useParameters)
+				{
+					sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
+				}
+				else
+				{
+					sb.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');", id, SanitizeSqlString(name)));
+				}
 				parameters.Add(new SqlParameter(idParamName, id));
 				parameters.Add(new SqlParameter(nameParamName, name));
 			}
@@ -105,6 +112,11 @@ MERGE INTO [{0}] dst
 
 			sb.AppendLine("DROP TABLE #lookups;");
 			runSql(sb.ToString(), parameters);
+		}
+
+		private string SanitizeSqlString(string value)
+		{
+			return value.Replace("'", "''");
 		}
 
 		private string TableName(string enumName)
