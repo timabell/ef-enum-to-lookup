@@ -81,6 +81,28 @@
 			dbHandler.Apply(model, (sql, parameters) => ExecuteSqlCommand(context, sql, parameters));
 		}
 
+		/// <summary>
+		/// Rather than applying the changes directly to the database as Apply() does,
+		/// this will give you a copy of the sql that would have been run to bring the
+		/// database up to date. This is useful for generating migration scripts or
+		/// for environments where your application isn't allowed to make schema changes;
+		/// in this scenario you can generate the sql in advance and apply it separately.
+		/// </summary>
+		/// <param name="context">EF Database context to search for enum references</param>
+		/// <returns>SQL statements needed to update the target database</returns>
+		public string GenerateMigrationSql(DbContext context)
+		{
+			var model = BuildModelFromContext(context);
+
+			var dbHandler = GetDbHandler();
+
+			var sb = new StringBuilder();
+
+			dbHandler.Apply(model, (sql, parameters) => sb.Append(sql));
+
+			return sb.ToString();
+		}
+
 		private IDbHandler GetDbHandler()
 		{
 			// todo: support MariaDb etc. Issue #16

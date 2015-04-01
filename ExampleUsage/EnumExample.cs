@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using EfEnumToLookup.LookupGenerator;
 using NUnit.Framework;
 
@@ -23,10 +24,18 @@ namespace ExampleUsage
 		{
 			using (var context = new MyDbContext())
 			{
-				// This would normally be run inside either a db initializer Seed()
-				// or the migration Seed() method which both provide access to a context.
 				var enumToLookup = new EnumToLookup();
 				enumToLookup.NameFieldLength = 42; // optional, example of how to override default values
+
+				// if you need to get at the raw sql to run a migration separately then use:
+				var migrationSql = enumToLookup.GenerateMigrationSql(context);
+				// you'd probably want to write this to a file and then add it to source control, but for
+				// the purpose of demonstration we'll write it to the console instead:
+				Console.Out.WriteLine(migrationSql);
+
+				// otherwise let the library make the changes directly to the database
+				// This would normally be run inside either a db initializer Seed()
+				// or the migration Seed() method which both provide access to a context.
 				enumToLookup.Apply(context);
 			}
 		}
