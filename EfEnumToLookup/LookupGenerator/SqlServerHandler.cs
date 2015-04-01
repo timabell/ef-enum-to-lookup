@@ -31,8 +31,8 @@
 		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			List<SqlParameter> parameters;
-			var sql = BuildSql(model, true, out parameters);
-			runSql(sql, parameters);
+			var sql = BuildSql(model, false, out parameters);
+			runSql(sql, null);
 		}
 
 		public string GenerateMigrationSql(LookupDbModel model)
@@ -112,13 +112,13 @@ end
 				if (useParameters)
 				{
 					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});\r\n", idParamName, nameParamName);
+					parameters.Add(new SqlParameter(idParamName, id));
+					parameters.Add(new SqlParameter(nameParamName, name));
 				}
 				else
 				{
 					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');\r\n", id, SanitizeSqlString(name));
 				}
-				parameters.Add(new SqlParameter(idParamName, id));
-				parameters.Add(new SqlParameter(nameParamName, name));
 			}
 
 			sql.AppendLine(string.Format(@"
