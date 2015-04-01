@@ -42,9 +42,12 @@
 		private string BuildSql(LookupDbModel model)
 		{
 			var sql = new StringBuilder();
+			sql.AppendLine("set xact_abort on; -- rollback on error");
+			sql.AppendLine("begin tran;");
 			sql.AppendLine(CreateTables(model.Lookups));
 			sql.AppendLine(PopulateLookups(model.Lookups));
-			sql.Append(AddForeignKeys(model.References));
+			sql.AppendLine(AddForeignKeys(model.References));
+			sql.AppendLine("commit;");
 			return sql.ToString();
 		}
 
