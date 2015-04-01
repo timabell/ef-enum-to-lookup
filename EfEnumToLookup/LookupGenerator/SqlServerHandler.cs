@@ -33,7 +33,7 @@
 			// build up a big sql string of everything and then run it
 			var sql = new StringBuilder();
 			sql.AppendLine(CreateTables(model.Lookups));
-			IList<SqlParameter> parameters;
+			List<SqlParameter> parameters;
 			sql.AppendLine(PopulateLookups(model.Lookups, useParameters, out parameters));
 			sql.AppendLine(AddForeignKeys(model.References));
 			runSql(sql.ToString(), parameters);
@@ -71,22 +71,25 @@ end\r\n",
 			return sql.ToString();
 		}
 
-		private string PopulateLookups(IList<LookupData> lookupData, bool useParameters, out IList<SqlParameter> parameters)
+		private string PopulateLookups(IEnumerable<LookupData> lookupData, bool useParameters, out List<SqlParameter> parameters)
 		{
 			var sql = new StringBuilder();
 			sql.AppendLine(string.Format("CREATE TABLE #lookups (Id int, Name nvarchar({0}) COLLATE database_default);", NameFieldLength));
+			parameters = new List<SqlParameter>();
 			foreach (var lookup in lookupData)
 			{
-				PopulateLookup(lookup, useParameters, sql);
+				IList<SqlParameter> batchParameters;
+				sql.AppendLine(PopulateLookup(lookup, useParameters, out batchParameters));
+				parameters.AddRange(batchParameters);
 			}
 			sql.AppendLine("DROP TABLE #lookups;");
 			return sql.ToString();
 		}
 
-		private void PopulateLookup(LookupData lookup, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql)
+		private string PopulateLookup(LookupData lookup, bool useParameters, out IList<SqlParameter> parameters)
 		{
 			var sql = new StringBuilder();
-			var parameters = new List<SqlParameter>();
+			parameters = new List<SqlParameter>();
 			int paramIndex = 0;
 			foreach (var value in lookup.Values)
 			{
@@ -96,11 +99,11 @@ end\r\n",
 				var nameParamName = string.Format("name{0}", paramIndex++);
 				if (useParameters)
 				{
-					sql.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});", idParamName, nameParamName));
+					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES (@{0}, @{1});\r\n", idParamName, nameParamName);
 				}
 				else
 				{
-					sql.AppendLine(string.Format("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');", id, SanitizeSqlString(name)));
+					sql.AppendFormat("INSERT INTO #lookups (Id, Name) VALUES ({0}, N'{1}');\r\n", id, SanitizeSqlString(name));
 				}
 				parameters.Add(new SqlParameter(idParamName, id));
 				parameters.Add(new SqlParameter(nameParamName, name));
@@ -119,8 +122,8 @@ MERGE INTO [{0}] dst
 ;"
 				, TableName(lookup.Name)));
 
-			runSql(sql.ToString(), parameters);
-			runSql("TRUNCATE TABLE #lookups;", null);
+			sql.AppendLine("TRUNCATE TABLE #lookups;");
+			return sql.ToString();
 		}
 
 		private string SanitizeSqlString(string value)
