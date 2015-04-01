@@ -28,11 +28,15 @@ namespace EfEnumToLookup.LookupGenerator
 		/// Make the required changes to the database.
 		/// </summary>
 		/// <param name="model">Details of lookups and foreign keys to add/update</param>
-		/// <param name="useParameters">Whether the target supoorts sql parameters or whether
-		/// values should be embedded in the raw sql. Exists to allow generation of sql files,
-		/// but parameters should be preferred where possible to avoid sql-injection attacks.</param>
 		/// <param name="runSql">A callback providing a means to execute sql against the
 		/// server. (Or possibly write it to a file for later use.</param>
-		void Apply(LookupDbModel model, bool useParameters, Action<string, IEnumerable<SqlParameter>> runSql);
+		void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql);
+
+		/// <summary>
+		/// Generates the migration SQL needed to update the database to match
+		/// the enums in the current model.
+		/// </summary>
+		/// <returns></returns>
+		string GenerateMigrationSql(LookupDbModel model);
 	}
 }
