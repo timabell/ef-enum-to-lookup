@@ -118,7 +118,7 @@
 
 		private LookupDbModel BuildModelFromContext(DbContext context)
 		{
-// recurse through dbsets and references finding anything that uses an enum
+			// recurse through dbsets and references finding anything that uses an enum
 			var enumReferences = FindEnumReferences(context);
 
 			// for the list of enums generate and missing tables
