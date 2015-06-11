@@ -122,7 +122,11 @@
 			var enumReferences = FindEnumReferences(context);
 
 			// for the list of enums generate and missing tables
-			var enums = enumReferences.Select(r => r.EnumType).Distinct().ToList();
+			var enums = enumReferences
+				.Select(r => r.EnumType)
+				.Distinct()
+				.OrderBy(r => r.Name)
+				.ToList();
 
 			var lookups = (
 				from enm in enums
