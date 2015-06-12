@@ -33,6 +33,6 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.7.1.0")]
+[assembly: AssemblyFileVersion("1.8.0.0")]
 
 [assembly:InternalsVisibleTo("EfEnumToLookupTests,PublicKey=002400000480000094000000060200000024000052534131000400000100010099a4b9a877a10f75bc4c1a9bf08ee9e21a2df3b9746f2535505b77b3f82971aa8a07caa6cd60b9df6e4b2982ebdb78da960ec1e7688a3b56b6da65e05783ee51f345b1cf0e5a38a02f3cc7c1763d7e469edafc59ef8c21b1a9bcca8548973429577362d992e4a6ed001cb28dc54ecc7ef298e94676bd918fd9e9b521e0cb7ae5")]
