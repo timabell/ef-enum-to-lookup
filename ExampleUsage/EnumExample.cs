@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
+using System.Linq;
 using EfEnumToLookup.LookupGenerator;
 using NUnit.Framework;
 
@@ -39,7 +42,8 @@ namespace ExampleUsage
 			}
 		}
 
-		[Test] public void ExampleOfGeneratingSql()
+		[Test]
+        public void ExampleOfGeneratingSql()
 		{
 			using (var context = new MyDbContext())
 			{
@@ -55,14 +59,57 @@ namespace ExampleUsage
 				context.Database.ExecuteSqlCommand(migrationSql);
 			}
 		}
-	}
+
+        [Test]        
+        public void CheckIfDescriptionColumnsExists()
+        {
+            using (var context = new MyDbContext())
+            {
+                var enumToLookup = new EnumToLookup();
+
+                // if you need to get at the raw sql to run a migration separately then use:
+                var migrationSql = enumToLookup.GenerateMigrationSql(context);
+                // you'd probably want to write this to a file and then add it to source control, but for
+                // the purpose of demonstration we'll write it to the console instead:
+                Console.Out.WriteLine(migrationSql);
+
+                // at some point you'd then run the sql (probably not like this, but this serves as a test that it's working)
+                context.Database.ExecuteSqlCommand(migrationSql);
+
+                var descriptions = context.Database.SqlQuery<Enum>("Select Id, Name, Description From Enum_Size");
+
+                var descriptionList = descriptions.ToList();
+
+                Assert.AreEqual(4, descriptionList.Count);                
+
+                Assert.AreEqual(string.Empty, descriptionList.Single(x => x.Id == (int)Size.Small).Description);
+                Assert.AreEqual("It's average", descriptionList.Single(x => x.Id == (int)Size.Medium).Description);
+                Assert.AreEqual(string.Empty, descriptionList.Single(x => x.Id == (int)Size.ReallyVeryBig).Description);
+                Assert.AreEqual("Huge you know?", descriptionList.Single(x => x.Id == (int)Size.Huge).Description);
+
+                var shapes = context.Database.SqlQuery<Enum>("Select Id, Name, Description From Enum_Shape");
+
+                var shapeList = shapes.ToList();
+
+                Assert.AreEqual(2, shapeList.Count);
+
+                Assert.AreEqual(string.Empty, shapeList.Single(x => x.Id == (int)Shape.Square).Description);
+                Assert.AreEqual("Round it is!", shapeList.Single(x => x.Id == (int)Shape.Round).Description);
+            }
+        }
+    }
 
 	/// <summary>
 	/// Example context
 	/// </summary>
 	public class MyDbContext : DbContext
-	{
-		public DbSet<Foo> Foos { get; set; }
+    {
+        
+        public MyDbContext()
+        {
+        }
+
+        public DbSet<Foo> Foos { get; set; }
 	}
 
 	/// <summary>
@@ -87,9 +134,9 @@ namespace ExampleUsage
 		Medium,
 
 		ReallyVeryBig,
-
+        
 		// this is only fully qualified because of a name clash with NUnit, you wouldn't normally need to.
-		[System.ComponentModel.Description("Huge you know?")] // give it a different name in the lookup table
+		[System.ComponentModel.Description("Huge you know?")]
 		Huge,
 
 		[RuntimeOnly] // this won't exist in the database, handy to prevent unwanted data creeping in (enforced by foreign key constraint).
@@ -99,6 +146,14 @@ namespace ExampleUsage
 	public enum Shape
 	{
 		Square,
-		Round
+        [System.ComponentModel.Description("Round it is!")]
+        Round
 	}
+
+    public class Enum
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
 }
