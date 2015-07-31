@@ -12,11 +12,17 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		int NameFieldLength { get; set; }
 
-		/// <summary>
-		/// Prefix to add to all the generated tables to separate help group them together
-		/// and make them stand out as different from other tables.
+        /// <summary>
+		/// The size of the Description field that will be added to the generated lookup tables.
+		/// Adjust to suit your data if required.
 		/// </summary>
-		string TableNamePrefix { get; set; }
+		int DescriptionFieldLength { get; set; }
+
+        /// <summary>
+        /// Prefix to add to all the generated tables to separate help group them together
+        /// and make them stand out as different from other tables.
+        /// </summary>
+        string TableNamePrefix { get; set; }
 
 		/// <summary>
 		/// Suffix to add to all the generated tables to separate help group them together

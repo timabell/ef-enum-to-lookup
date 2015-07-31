@@ -19,8 +19,11 @@ namespace EfEnumToLookupTests.Tests
 			// Using setup rather than teardown to make it easier to inspect the database after running a test.
 			using (var context = new MagicContext())
 			{
-				context.Database.Delete();
-			}
+                if(context.Database.Exists())
+                { 
+                    context.Database.Delete();
+                }
+            }
 
 			Database.SetInitializer(new TestInitializer(new EnumToLookup()));
 			using (var context = new MagicContext())
@@ -63,9 +66,9 @@ namespace EfEnumToLookupTests.Tests
 		{
 			using (var context = new MagicContext())
 			{
-				const string sql = "select @desciption = name from Enum_Importance where id = @id";
+				const string sql = "select @description = description from Enum_Importance where id = @id";
 				var idParam = new SqlParameter("id", (int)Importance.NotBovverd);
-				var outParam = new SqlParameter("desciption", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
+				var outParam = new SqlParameter("description", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
 				context.Database.ExecuteSqlCommand(sql, idParam, outParam);
 				var actualName = outParam.Value;
 				Assert.AreEqual(Constants.BovveredDisplay, actualName);
