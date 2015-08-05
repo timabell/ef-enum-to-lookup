@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
 	<metadata>
 		<id>ef-enum-to-lookup</id>
-		<version>1.8.0</version>
+		<version>2.0.0-beta</version>
 		<title>Enum Lookup-Table Generator for Entity Framework 6</title>
 		<authors>Tim Abell</authors>
 		<licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
@@ -25,9 +25,9 @@
 			Creates lookup tables and foreign key constraints based on the enums used in your model.
 		</summary>
 		<releaseNotes>
-			v1.8.0
-			* stable sql output ordering https://github.com/timabell/ef-enum-to-lookup/issues/29
-			* stable primary key names https://github.com/timabell/ef-enum-to-lookup/issues/31
+			v2.0.0-beta - experimental release containing possibly breaking changes from v1.x
+
+			See the v2 milestone on github for more info - https://github.com/timabell/ef-enum-to-lookup/milestones
 		</releaseNotes>
 		<copyright>Tim Abell</copyright>
 		<language>en-GB</language>
