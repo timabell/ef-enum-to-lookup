@@ -108,7 +108,7 @@ end
 			sql.AppendLine(string.Format(@"
 MERGE INTO [{0}] dst
 	USING #lookups src ON src.Id = dst.Id
-	WHEN MATCHED AND src.Name <> dst.Name THEN
+	WHEN MATCHED AND src.Name <> dst.Name collate Latin1_General_BIN2 THEN
 		UPDATE SET Name = src.Name
 	WHEN NOT MATCHED THEN
 		INSERT (Id, Name)
