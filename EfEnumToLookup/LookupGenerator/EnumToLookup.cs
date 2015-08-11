@@ -1,29 +1,28 @@
 ﻿namespace EfEnumToLookup.LookupGenerator
 {
-	using System;
-	using System.Collections.Generic;
-	using System.ComponentModel;
-	using System.Data.Entity;
-	using System.Data.Entity.Infrastructure;
-	using System.Data.SqlClient;
-	using System.Linq;
-	using System.Reflection;
-	using System.Text;
-	using System.Text.RegularExpressions;
+    using System;
+    using System.Collections.Generic;    
+    using System.Data.Entity;
+    using System.Data.Entity.Core.Metadata.Edm;    
+    using System.Data.Entity.Infrastructure;
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;    
 
-	/// <summary>
-	/// Makes up for a missing feature in Entity Framework 6.1
-	/// Creates lookup tables and foreign key constraints based on the enums
-	/// used in your model.
-	/// Use the properties exposed to control behaviour.
-	/// Run <c>Apply</c> from your Seed method in either your database initializer
-	/// or your EF Migrations.
-	/// It is safe to run repeatedly, and will ensure enum values are kept in line
-	/// with your current code.
-	/// Source code: https://github.com/timabell/ef-enum-to-lookup
-	/// License: MIT
-	/// </summary>
-	public class EnumToLookup : IEnumToLookup
+    /// <summary>
+    /// Makes up for a missing feature in Entity Framework 6.1
+    /// Creates lookup tables and foreign key constraints based on the enums
+    /// used in your model.
+    /// Use the properties exposed to control behaviour.
+    /// Run <c>Apply</c> from your Seed method in either your database initializer
+    /// or your EF Migrations.
+    /// It is safe to run repeatedly, and will ensure enum values are kept in line
+    /// with your current code.
+    /// Source code: https://github.com/timabell/ef-enum-to-lookup
+    /// License: MIT
+    /// </summary>
+    public class EnumToLookup : IEnumToLookup
 	{
 		private readonly EnumParser _enumParser;
 
@@ -144,16 +143,17 @@
 					NumericType = enm.GetEnumUnderlyingType(),
 					Values = _enumParser.GetLookupValues(enm),
 				}).ToList();
-
+            
 			var model = new LookupDbModel
 			{
 				Lookups = lookups,
 				References = enumReferences,
-			};
+                Schema = context.GetDefaultSchema()
+            };
 			return model;
 		}
-
-		private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)
+        
+        private static int ExecuteSqlCommand(DbContext context, string sql, IEnumerable<SqlParameter> parameters = null)
 		{
 			if (parameters == null)
 			{

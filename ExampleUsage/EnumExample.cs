@@ -67,16 +67,9 @@ namespace ExampleUsage
             {
                 var enumToLookup = new EnumToLookup();
 
-                // if you need to get at the raw sql to run a migration separately then use:
-                var migrationSql = enumToLookup.GenerateMigrationSql(context);
-                // you'd probably want to write this to a file and then add it to source control, but for
-                // the purpose of demonstration we'll write it to the console instead:
-                Console.Out.WriteLine(migrationSql);
-
-                // at some point you'd then run the sql (probably not like this, but this serves as a test that it's working)
-                context.Database.ExecuteSqlCommand(migrationSql);
-
-                var descriptions = context.Database.SqlQuery<Enum>("Select Id, Name, Description From Enum_Size");
+                enumToLookup.Apply(context);
+                
+                var descriptions = context.Database.SqlQuery<Enum>("Select Id, Name, Description From dbo.Enum_Size");
 
                 var descriptionList = descriptions.ToList();
 
@@ -87,7 +80,38 @@ namespace ExampleUsage
                 Assert.AreEqual(string.Empty, descriptionList.Single(x => x.Id == (int)Size.ReallyVeryBig).Description);
                 Assert.AreEqual("Huge you know?", descriptionList.Single(x => x.Id == (int)Size.Huge).Description);
 
-                var shapes = context.Database.SqlQuery<Enum>("Select Id, Name, Description From Enum_Shape");
+                var shapes = context.Database.SqlQuery<Enum>("Select Id, Name, Description From dbo.Enum_Shape");
+
+                var shapeList = shapes.ToList();
+
+                Assert.AreEqual(2, shapeList.Count);
+
+                Assert.AreEqual(string.Empty, shapeList.Single(x => x.Id == (int)Shape.Square).Description);
+                Assert.AreEqual("Round it is!", shapeList.Single(x => x.Id == (int)Shape.Round).Description);
+            }
+        }
+
+        [Test]
+        public void CheckIfDescriptionColumnsExistsUsingCustomSchema()
+        {
+            using (var context = new MyCustomSchemaDbContext())
+            {
+                var enumToLookup = new EnumToLookup();
+
+                enumToLookup.Apply(context);
+                
+                var descriptions = context.Database.SqlQuery<Enum>("Select Id, Name, Description From myschema.Enum_Size");
+
+                var descriptionList = descriptions.ToList();
+
+                Assert.AreEqual(4, descriptionList.Count);
+
+                Assert.AreEqual(string.Empty, descriptionList.Single(x => x.Id == (int)Size.Small).Description);
+                Assert.AreEqual("It's average", descriptionList.Single(x => x.Id == (int)Size.Medium).Description);
+                Assert.AreEqual(string.Empty, descriptionList.Single(x => x.Id == (int)Size.ReallyVeryBig).Description);
+                Assert.AreEqual("Huge you know?", descriptionList.Single(x => x.Id == (int)Size.Huge).Description);
+
+                var shapes = context.Database.SqlQuery<Enum>("Select Id, Name, Description From myschema.Enum_Shape");
 
                 var shapeList = shapes.ToList();
 
@@ -105,12 +129,28 @@ namespace ExampleUsage
 	public class MyDbContext : DbContext
     {
         public DbSet<Foo> Foos { get; set; }
-	}
 
-	/// <summary>
-	/// Example entity that references an enum
-	/// </summary>
-	public class Foo
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {            
+            base.OnModelCreating(modelBuilder);
+        }
+    }
+
+    public class MyCustomSchemaDbContext : DbContext
+    {
+        public DbSet<Foo> Foos { get; set; }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDefaultSchema("myschema");
+            base.OnModelCreating(modelBuilder);
+        }
+    }
+
+    /// <summary>
+    /// Example entity that references an enum
+    /// </summary>
+    public class Foo
 	{
 		public int Id { get; set; }
 		public Size Size { get; set; }

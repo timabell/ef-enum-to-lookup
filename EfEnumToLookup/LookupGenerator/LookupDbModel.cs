@@ -9,6 +9,7 @@ namespace EfEnumToLookup.LookupGenerator
 	/// </summary>
 	internal class LookupDbModel
 	{
+        public string Schema { get; set; }
 		public IList<LookupData> Lookups { get; set; }
 		public IList<EnumReference> References { get; set; }
 	}
