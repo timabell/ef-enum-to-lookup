@@ -1,10 +1,10 @@
-﻿using System;
-using System.Data.Entity;
-using EfEnumToLookup.LookupGenerator;
-using NUnit.Framework;
-
-namespace ExampleUsage
+﻿namespace ExampleUsage
 {
+	using System;
+	using System.Data.Entity;
+	using EfEnumToLookup.LookupGenerator;
+	using NUnit.Framework;
+
 	/// <summary>
 	/// Example usage of the ef lookup generator.
 	/// To see the library in action create a project for this example cs
@@ -23,6 +23,7 @@ namespace ExampleUsage
 		public void Setup()
 		{
 			Database.SetInitializer(new DropCreateDatabaseAlways<MyDbContext>());
+			Database.SetInitializer(new DropCreateDatabaseAlways<MyCustomSchemaDbContext>());
 		}
 
 		[Test]
@@ -39,7 +40,8 @@ namespace ExampleUsage
 			}
 		}
 
-		[Test] public void ExampleOfGeneratingSql()
+		[Test]
+		public void ExampleOfGeneratingSql()
 		{
 			using (var context = new MyDbContext())
 			{
@@ -55,6 +57,34 @@ namespace ExampleUsage
 				context.Database.ExecuteSqlCommand(migrationSql);
 			}
 		}
+
+		[Test]
+		public void CheckThatDefaultSchemaExists()
+		{
+			using (var context = new MyDbContext())
+			{
+				var enumToLookup = new EnumToLookup();
+				enumToLookup.Apply(context);
+
+				context.Foos.Add(new Foo { Size = Size.Small, Shape = Shape.Round });
+
+				context.Database.SqlQuery<Foo>("Select Id, Size, Shape From dbo.Enum_Size");
+			}
+		}
+
+		[Test]
+		public void CheckIfCustomSchemaExists()
+		{
+			using (var context = new MyCustomSchemaDbContext())
+			{
+				var enumToLookup = new EnumToLookup();
+				enumToLookup.Apply(context);
+
+				context.Foos.Add(new Foo { Size = Size.Small, Shape = Shape.Round });
+
+				context.Database.SqlQuery<Foo>("Select Id, Size, Shape From myschema.Enum_Size");
+			}
+		}
 	}
 
 	/// <summary>
@@ -63,6 +93,17 @@ namespace ExampleUsage
 	public class MyDbContext : DbContext
 	{
 		public DbSet<Foo> Foos { get; set; }
+	}
+
+	public class MyCustomSchemaDbContext : DbContext
+	{
+		public DbSet<Foo> Foos { get; set; }
+
+		protected override void OnModelCreating(DbModelBuilder modelBuilder)
+		{
+			modelBuilder.HasDefaultSchema("myschema");
+			base.OnModelCreating(modelBuilder);
+		}
 	}
 
 	/// <summary>
