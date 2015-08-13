@@ -59,7 +59,7 @@
 			foreach (var lookup in model.Lookups)
 			{
 				sql.AppendFormat(
-					@"IF OBJECT_ID('{0}', 'U') IS NULL
+					@"IF OBJECT_ID('{3}.{0}', 'U') IS NULL
 					begin
 						CREATE TABLE [{3}].[{0}] (Id {2} CONSTRAINT PK_{0} PRIMARY KEY, Name nvarchar({1}));
 						exec sys.sp_addextendedproperty @name=N'MS_Description', @level0type=N'SCHEMA', @level0name=N'{3}', @level1type=N'TABLE',
@@ -79,7 +79,7 @@
 				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
 
 				sql.AppendFormat(
-					" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{4}].[{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{4}].[{3}] (Id);{5}",
+					" IF OBJECT_ID('{4}.{0}', 'F') IS NULL ALTER TABLE [{4}].[{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{4}].[{3}] (Id);{5}",
 					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name), model.Schema, Environment.NewLine);
 			}
 			return sql.ToString();
