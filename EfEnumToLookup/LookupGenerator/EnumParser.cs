@@ -57,6 +57,7 @@ namespace EfEnumToLookup.LookupGenerator
 				{
 					Id = (int)numericValue,
 					Name = EnumName(value),
+					Description = EnumDescriptionValue(value)
 				});
 			}
 			return values;
@@ -70,12 +71,6 @@ namespace EfEnumToLookup.LookupGenerator
 		/// </summary>
 		private string EnumName(Enum value)
 		{
-			var description = EnumDescriptionValue(value);
-			if (description != null)
-			{
-				return description;
-			}
-
 			var name = value.ToString();
 
 			if (SplitWords)

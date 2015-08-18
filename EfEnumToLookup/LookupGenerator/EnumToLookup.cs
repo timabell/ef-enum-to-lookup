@@ -29,6 +29,7 @@
 		{
 			// set default behaviour, can be overridden by setting properties on object before calling Apply()
 			NameFieldLength = 255;
+			DescriptionFieldLength = 255;
 			TableNamePrefix = "Enum_";
 			_enumParser = new EnumParser { SplitWords = true };
 			UseTransaction = true;
@@ -49,6 +50,12 @@
 		/// Adjust to suit your data if required, defaults to 255.
 		/// </summary>
 		public int NameFieldLength { get; set; }
+
+		/// <summary>
+		/// The size of the Description field that will be added to the generated lookup tables.
+		/// Adjust to suit your data if required, defaults to 255.
+		/// </summary>
+		public int DescriptionFieldLength { get; set; }
 
 		/// <summary>
 		/// Prefix to add to all the generated tables to separate help group them together
@@ -114,6 +121,7 @@
 			IDbHandler dbHandler = new SqlServerHandler
 			{
 				NameFieldLength = NameFieldLength,
+				DescriptionFieldLength = DescriptionFieldLength,
 				TableNamePrefix = TableNamePrefix,
 				TableNameSuffix = TableNameSuffix,
 				UseTransaction = UseTransaction,

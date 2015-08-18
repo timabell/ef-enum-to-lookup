@@ -48,7 +48,7 @@ namespace EfEnumToLookupTests.Tests
 
 
 		[Test]
-		public void ReadsDecoratedName()
+		public void ReadsDecoratedDescription()
 		{
 			// arrange
 			var parser = new EnumParser { SplitWords = true };
@@ -57,7 +57,7 @@ namespace EfEnumToLookupTests.Tests
 			var result = parser.GetLookupValues(typeof(DecoratedEnum));
 
 			// assert
-			Assert.AreEqual("Wide boy", result.Single().Name);
+			Assert.AreEqual("Wide boy", result.Single().Description);
 		}
 
 		private enum BareEnum
