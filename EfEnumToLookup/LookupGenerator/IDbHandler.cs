@@ -36,7 +36,8 @@ namespace EfEnumToLookup.LookupGenerator
 		/// Generates the migration SQL needed to update the database to match
 		/// the enums in the current model.
 		/// </summary>
-		/// <returns></returns>
+		/// <param name="model">Details of lookups and foreign keys to add/update</param>
+		/// <returns>The generated SQL script</returns>
 		string GenerateMigrationSql(LookupDbModel model);
 	}
 }
