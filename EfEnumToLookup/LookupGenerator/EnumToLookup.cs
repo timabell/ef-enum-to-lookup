@@ -2,14 +2,12 @@
 {
 	using System;
 	using System.Collections.Generic;
-	using System.ComponentModel;
 	using System.Data.Entity;
 	using System.Data.Entity.Infrastructure;
 	using System.Data.SqlClient;
 	using System.Linq;
 	using System.Reflection;
 	using System.Text;
-	using System.Text.RegularExpressions;
 
 	/// <summary>
 	/// Makes up for a missing feature in Entity Framework 6.1
@@ -33,6 +31,7 @@
 			NameFieldLength = 255;
 			TableNamePrefix = "Enum_";
 			_enumParser = new EnumParser { SplitWords = true };
+			UseTransaction = true;
 		}
 
 		/// <summary>
@@ -64,6 +63,11 @@
 		/// Defaults to "" set to null or "" to not have any suffix.
 		/// </summary>
 		public string TableNameSuffix { get; set; }
+
+		/// <summary>
+		/// Whether to run the changes inside a database transaction.
+		/// </summary>
+		public bool UseTransaction { get; set; }
 
 		/// <summary>
 		/// Create any missing lookup tables,
@@ -112,6 +116,7 @@
 				NameFieldLength = NameFieldLength,
 				TableNamePrefix = TableNamePrefix,
 				TableNameSuffix = TableNameSuffix,
+				UseTransaction = UseTransaction,
 			};
 			return dbHandler;
 		}

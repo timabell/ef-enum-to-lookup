@@ -9,31 +9,47 @@
 	{
 		/// <summary>
 		/// The size of the Name field that will be added to the generated lookup tables.
-		/// Adjust to suit your data if required, defaults to 255.
+		/// Adjust to suit your data if required.
 		/// </summary>
 		public int NameFieldLength { get; set; }
 
 		/// <summary>
 		/// Prefix to add to all the generated tables to separate help group them together
 		/// and make them stand out as different from other tables.
-		/// Defaults to "Enum_" set to null or "" to not have any prefix.
 		/// </summary>
 		public string TableNamePrefix { get; set; }
 
 		/// <summary>
 		/// Suffix to add to all the generated tables to separate help group them together
 		/// and make them stand out as different from other tables.
-		/// Defaults to "" set to null or "" to not have any suffix.
 		/// </summary>
 		public string TableNameSuffix { get; set; }
 
 
+		/// <summary>
+		/// Whether to run the changes inside a database transaction.
+		/// </summary>
+		public bool UseTransaction { get; set; }
+
+
+		/// <summary>
+		/// Make the required changes to the database.
+		/// </summary>
+		/// <param name="model">Details of lookups and foreign keys to add/update</param>
+		/// <param name="runSql">A callback providing a means to execute sql against the
+		/// server. (Or possibly write it to a file for later use.</param>
 		public void Apply(LookupDbModel model, Action<string, IEnumerable<SqlParameter>> runSql)
 		{
 			var sql = BuildSql(model);
 			runSql(sql, null);
 		}
 
+		/// <summary>
+		/// Generates the migration SQL needed to update the database to match
+		/// the enums in the current model.
+		/// </summary>
+		/// <param name="model">Details of lookups and foreign keys to add/update</param>
+		/// <returns>The generated SQL script</returns>
 		public string GenerateMigrationSql(LookupDbModel model)
 		{
 			return BuildSql(model);
@@ -43,12 +59,18 @@
 		{
 			var sql = new StringBuilder();
 			sql.AppendLine("set nocount on;");
-			sql.AppendLine("set xact_abort on; -- rollback on error");
-			sql.AppendLine("begin tran;");
+			if (UseTransaction)
+			{
+				sql.AppendLine("set xact_abort on; -- rollback on error");
+				sql.AppendLine("begin tran;");
+			}
 			sql.AppendLine(CreateTables(model.Lookups));
 			sql.AppendLine(PopulateLookups(model.Lookups));
 			sql.AppendLine(AddForeignKeys(model.References));
-			sql.AppendLine("commit;");
+			if (UseTransaction)
+			{
+				sql.AppendLine("commit;");
+			}
 			return sql.ToString();
 		}
 
