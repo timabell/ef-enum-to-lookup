@@ -9,21 +9,19 @@
 	{
 		/// <summary>
 		/// The size of the Name field that will be added to the generated lookup tables.
-		/// Adjust to suit your data if required, defaults to 255.
+		/// Adjust to suit your data if required.
 		/// </summary>
 		public int NameFieldLength { get; set; }
 
 		/// <summary>
 		/// Prefix to add to all the generated tables to separate help group them together
 		/// and make them stand out as different from other tables.
-		/// Defaults to "Enum_" set to null or "" to not have any prefix.
 		/// </summary>
 		public string TableNamePrefix { get; set; }
 
 		/// <summary>
 		/// Suffix to add to all the generated tables to separate help group them together
 		/// and make them stand out as different from other tables.
-		/// Defaults to "" set to null or "" to not have any suffix.
 		/// </summary>
 		public string TableNameSuffix { get; set; }
 
