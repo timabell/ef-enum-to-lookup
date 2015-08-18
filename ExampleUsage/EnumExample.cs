@@ -39,7 +39,8 @@ namespace ExampleUsage
 			}
 		}
 
-		[Test] public void ExampleOfGeneratingSql()
+		[Test]
+		public void ExampleOfGeneratingSql()
 		{
 			using (var context = new MyDbContext())
 			{
