@@ -63,9 +63,9 @@ namespace EfEnumToLookupTests.Tests
 		{
 			using (var context = new MagicContext())
 			{
-				const string sql = "select @desciption = name from Enum_Importance where id = @id";
+				const string sql = "select @description = name from Enum_Importance where id = @id";
 				var idParam = new SqlParameter("id", (int)Importance.NotBovverd);
-				var outParam = new SqlParameter("desciption", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
+				var outParam = new SqlParameter("description", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
 				context.Database.ExecuteSqlCommand(sql, idParam, outParam);
 				var actualName = outParam.Value;
 				Assert.AreEqual(Constants.BovveredDisplay, actualName);
