@@ -27,6 +27,12 @@
 
 
 		/// <summary>
+		/// Whether to run the changes inside a database transaction.
+		/// </summary>
+		public bool UseTransaction { get; set; }
+
+
+		/// <summary>
 		/// Make the required changes to the database.
 		/// </summary>
 		/// <param name="model">Details of lookups and foreign keys to add/update</param>
@@ -53,12 +59,18 @@
 		{
 			var sql = new StringBuilder();
 			sql.AppendLine("set nocount on;");
-			sql.AppendLine("set xact_abort on; -- rollback on error");
-			sql.AppendLine("begin tran;");
+			if (UseTransaction)
+			{
+				sql.AppendLine("set xact_abort on; -- rollback on error");
+				sql.AppendLine("begin tran;");
+			}
 			sql.AppendLine(CreateTables(model.Lookups));
 			sql.AppendLine(PopulateLookups(model.Lookups));
 			sql.AppendLine(AddForeignKeys(model.References));
-			sql.AppendLine("commit;");
+			if (UseTransaction)
+			{
+				sql.AppendLine("commit;");
+			}
 			return sql.ToString();
 		}
 

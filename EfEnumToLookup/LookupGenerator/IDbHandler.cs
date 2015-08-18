@@ -25,6 +25,11 @@ namespace EfEnumToLookup.LookupGenerator
 		string TableNameSuffix { get; set; }
 
 		/// <summary>
+		/// Whether to run the changes inside a database transaction.
+		/// </summary>
+		bool UseTransaction { get; set; }
+
+		/// <summary>
 		/// Make the required changes to the database.
 		/// </summary>
 		/// <param name="model">Details of lookups and foreign keys to add/update</param>

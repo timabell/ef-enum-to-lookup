@@ -34,5 +34,10 @@ namespace EfEnumToLookup.LookupGenerator
 		/// Defaults to "Enum_" set to null or "" to not have any prefix.
 		/// </summary>
 		string TableNamePrefix { get; set; }
+
+		/// <summary>
+		/// Whether to run the changes inside a database transaction.
+		/// </summary>
+		bool UseTransaction { get; set; }
 	}
 }
