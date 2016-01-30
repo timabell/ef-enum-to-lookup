@@ -1,6 +1,8 @@
 Entity Framework 6.1 Enum Lookup Table Generator
 ================================================
 
+[![Join the chat at https://gitter.im/timabell/ef-enum-to-lookup](https://badges.gitter.im/timabell/ef-enum-to-lookup.svg)](https://gitter.im/timabell/ef-enum-to-lookup?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 * License: MIT - http://opensource.org/licenses/MIT
 * Source code: https://github.com/timabell/ef-enum-to-lookup
 * Bug tracker: https://github.com/timabell/ef-enum-to-lookup/issues
