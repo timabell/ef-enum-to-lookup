@@ -23,6 +23,44 @@ namespace EfEnumToLookupTests.Tests
 			}
 		}
 
+		private static void TestSuffixConfig(string tableNameSuffix, string testSql)
+		{
+			// arrange
+			var enumToLookup =
+				new EnumToLookup(new EnumToLookupConfiguration {TableNamePrefix = null, TableNameSuffix = tableNameSuffix});
+			TestConfig(testSql, enumToLookup);
+		}
+
+		private static void TestPrefixConfig(string tableNamePrefix, string testSql)
+		{
+			// arrange
+			var enumToLookup = new EnumToLookup(new EnumToLookupConfiguration
+			{
+				TableNamePrefix = tableNamePrefix
+			});
+			TestConfig(testSql, enumToLookup);
+		}
+
+		private static void TestConfig(string testSql, EnumToLookup enumToLookup)
+		{
+			Database.SetInitializer(new TestInitializer(enumToLookup));
+			using (var context = new MagicContext())
+			{
+				var roger = new Rabbit {Name = "Roger", TehEars = Ears.Pointy};
+				context.PeskyWabbits.Add(roger);
+				context.SaveChanges();
+
+				// assert
+				context.Database.ExecuteSqlCommand(testSql); // should explode if anything is wrong
+			}
+		}
+
+		[Test]
+		public void NullTablePrefix()
+		{
+			TestPrefixConfig(null, "select 1 from Ears");
+		}
+
 		[Test]
 		public void SetsTablePrefix()
 		{
@@ -33,46 +71,6 @@ namespace EfEnumToLookupTests.Tests
 		public void SetsTableSuffix()
 		{
 			TestSuffixConfig("_Lookup", "select 1 from Ears_Lookup");
-		}
-
-		[Test]
-		public void NullTablePrefix()
-		{
-			TestPrefixConfig(null, "select 1 from Ears");
-		}
-
-		private static void TestSuffixConfig(string tableNameSuffix, string testSql)
-		{
-			// arrange
-			var enumToLookup = new EnumToLookup
-			{
-				TableNamePrefix = null,
-				TableNameSuffix = tableNameSuffix
-			};
-			TestConfig(testSql, enumToLookup);
-		}
-		private static void TestPrefixConfig(string tableNamePrefix, string testSql)
-		{
-			// arrange
-			var enumToLookup = new EnumToLookup
-			{
-				TableNamePrefix = tableNamePrefix
-			};
-			TestConfig(testSql, enumToLookup);
-		}
-
-		private static void TestConfig(string testSql, EnumToLookup enumToLookup)
-		{
-			Database.SetInitializer(new TestInitializer(enumToLookup));
-			using (var context = new MagicContext())
-			{
-				var roger = new Rabbit { Name = "Roger", TehEars = Ears.Pointy };
-				context.PeskyWabbits.Add(roger);
-				context.SaveChanges();
-
-				// assert
-				context.Database.ExecuteSqlCommand(testSql); // should explode if anything is wrong
-			}
 		}
 	}
 }

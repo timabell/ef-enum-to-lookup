@@ -30,8 +30,8 @@ namespace ExampleUsage
 		{
 			using (var context = new MyDbContext())
 			{
-				var enumToLookup = new EnumToLookup();
-				enumToLookup.NameFieldLength = 42; // optional, example of how to override default values
+				var enumToLookup = new EnumToLookup(new EnumToLookupConfiguration { NameFieldLength = 42 });
+				// optional, example of how to override default values
 
 				// This would normally be run inside either a db initializer Seed()
 				// or the migration Seed() method which both provide access to a context.

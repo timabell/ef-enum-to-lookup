@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EfEnumToLookup.LookupGenerator
+namespace EfEnumToLookup.LookupGenerator.Models
 {
 	/// <summary>
 	/// Not the best name ever. Everything you need to know

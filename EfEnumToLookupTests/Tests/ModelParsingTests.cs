@@ -26,7 +26,7 @@ namespace EfEnumToLookupTests.Tests
 			IList<EnumReference> references;
 			using (var context = new MagicContext())
 			{
-				references = _enumToLookup.FindEnumReferences(context);
+				references = EnumToLookup.FindEnumReferences(context);
 			}
 			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
 			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
@@ -43,7 +43,7 @@ namespace EfEnumToLookupTests.Tests
 		[Test]
 		public void FindsEnumOnType()
 		{
-			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
+			var enums = EnumToLookup.FindEnums(typeof (Rabbit));
 			var prop = enums.SingleOrDefault(p => p.Name == "TehEars");
 			Assert.IsNotNull(prop, "Enum property not found");
 			Assert.AreEqual(typeof (Ears), prop.PropertyType);
@@ -52,7 +52,7 @@ namespace EfEnumToLookupTests.Tests
 		[Test]
 		public void FindsNullableEnumOnType()
 		{
-			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
+			var enums = EnumToLookup.FindEnums(typeof (Rabbit));
 			var prop = enums.SingleOrDefault(p => p.Name == "SpeedyLegs");
 			Assert.IsNotNull(prop, "Enum property not found");
 			Assert.AreEqual(typeof (Legs?), prop.PropertyType);
