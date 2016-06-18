@@ -53,6 +53,7 @@
 			// get mapped table name from mapping, or fall-back to just the name if no mapping is set,
 			// I have no idea what causes Table to be null, and I have no unit test for it yet, but I have seen it.
 			var table = mappingFragment.StoreEntitySet.Table ?? mappingFragment.StoreEntitySet.Name;
+			var schema = mappingFragment.StoreEntitySet.Schema ?? "dbo";
 
 			foreach (var edmProperty in properties)
 			{
@@ -60,6 +61,7 @@
 				{
 					references.Add(new EnumReference
 					{
+						ReferencingTableSchema = schema,
 						ReferencingTable = table,
 						ReferencingField = GetColumnName(mappingFragment, edmProperty),
 						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
@@ -76,6 +78,7 @@
 						where nestedProperty.IsEnumType
 						select new EnumReference
 						{
+							ReferencingTableSchema = schema,
 							ReferencingTable = table,
 							ReferencingField = GetColumnName(mappingFragment, edmProperty, nestedProperty),
 							EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),

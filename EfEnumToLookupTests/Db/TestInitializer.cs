@@ -1,5 +1,6 @@
 ﻿using System.Data.Entity;
 using EfEnumToLookup.LookupGenerator;
+using EfEnumToLookup.LookupGenerator.Interfaces;
 
 namespace EfEnumToLookupTests.Db
 {

@@ -38,7 +38,7 @@ namespace EfEnumToLookup.LookupGenerator
 		{
 			if (!lookup.IsEnum)
 			{
-				throw new ArgumentException("Lookup type must be an enum", "lookup");
+				throw new ArgumentException("Lookup type must be an enum", nameof(lookup));
 			}
 
 			var values = new List<LookupValue>();
@@ -103,7 +103,7 @@ namespace EfEnumToLookup.LookupGenerator
 			// https://stackoverflow.com/questions/1799370/getting-attributes-of-enums-value/1799401#1799401
 			var member = enumType.GetMember(value.ToString()).First();
 			var description = member.GetCustomAttributes(typeof(DescriptionAttribute)).FirstOrDefault() as DescriptionAttribute;
-			return description == null ? null : description.Description;
+			return description?.Description;
 		}
 
 		private static bool IsRuntimeOnly(Enum value)
