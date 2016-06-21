@@ -90,7 +90,9 @@
     <Compile Include="Tests\TestStuff.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="EfEnumToLookup.snk" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -99,6 +101,9 @@
       <Project>{E6D4F1FB-D017-4BE2-AD13-90153BF479B1}</Project>
       <Name>EfEnumToLookup</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
