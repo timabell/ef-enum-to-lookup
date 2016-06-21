@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Data;
+﻿using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace EfEnumToLookupTests.Tests
 	[TestFixture]
 	public class TestStuff
 	{
-        string connectionString;
+		string connectionString;
 
 		[SetUp]
 		public void SetUp()
@@ -28,12 +27,12 @@ namespace EfEnumToLookupTests.Tests
 				}
 			}
 
-            Database.SetInitializer<ViewDbContext>(null); // disable db creation
+			Database.SetInitializer<ViewDbContext>(null); // disable db creation
 
-            Database.SetInitializer<MagicContext>(new TestInitializer(new EnumToLookup()));
+			Database.SetInitializer<MagicContext>(new TestInitializer(new EnumToLookup()));
 			using (var context = new MagicContext())
 			{
-                connectionString = context.Database.Connection.ConnectionString;
+				connectionString = context.Database.Connection.ConnectionString;
 
 				var roger = new Rabbit { Name = "Roger", TehEars = Ears.Pointy, BodyFur = Fur.Brown };
 				context.PeskyWabbits.Add(roger);
@@ -49,41 +48,41 @@ namespace EfEnumToLookupTests.Tests
 				var actual = context.PeskyWabbits.First();
 				Assert.AreEqual("Roger", actual.Name);
 				Assert.AreEqual(Ears.Pointy, actual.TehEars);
-                Assert.AreEqual(Fur.Brown, actual.BodyFur);
-                Assert.AreEqual(1, context.PeskyWabbits.Count()); // spot unwanted re-use of db
+				Assert.AreEqual(Fur.Brown, actual.BodyFur);
+				Assert.AreEqual(1, context.PeskyWabbits.Count()); // spot unwanted re-use of db
 			}
 		}
 
-        [Test]
-        public void DoesStuffWithViews()
-        {
-            using (var context = new ViewDbContext(connectionString))
-            {
-                const string ViewName = "ViewRabbits";
+		[Test]
+		public void DoesStuffWithViews()
+		{
+			using (var context = new ViewDbContext(connectionString))
+			{
+				const string ViewName = "ViewRabbits";
 
-                context.Database.ExecuteSqlCommand(string.Format("IF OBJECT_ID('{0}', 'V') IS NOT NULL DROP VIEW {0}", ViewName));
-                context.Database.ExecuteSqlCommand(string.Format("CREATE VIEW {0} AS SELECT * FROM Rabbits", ViewName));
+				context.Database.ExecuteSqlCommand(string.Format("IF OBJECT_ID('{0}', 'V') IS NOT NULL DROP VIEW {0}", ViewName));
+				context.Database.ExecuteSqlCommand(string.Format("CREATE VIEW {0} AS SELECT * FROM Rabbits", ViewName));
 
-                new EnumToLookup().Apply(context);
+				new EnumToLookup().Apply(context);
 
-                ViewRabbit actual = context.ViewRabbits.First();
-                Assert.AreEqual("Roger", actual.Name);
-                Assert.AreEqual(Ears.Pointy, actual.TehEars);
-                Assert.AreEqual(Fur.Brown, actual.BodyFur);
-            }
-        }
+				ViewRabbit actual = context.ViewRabbits.First();
+				Assert.AreEqual("Roger", actual.Name);
+				Assert.AreEqual(Ears.Pointy, actual.TehEars);
+				Assert.AreEqual(Fur.Brown, actual.BodyFur);
+			}
+		}
 
-        /// <summary>Context containing a view</summary>
-        public class ViewDbContext : DbContext
-        {
-            public ViewDbContext(string nameOrConnectionString) : base(nameOrConnectionString) { } // to override db naming convention to use existing db created by MagicContext
+		/// <summary>Context containing a view</summary>
+		public class ViewDbContext : DbContext
+		{
+			public ViewDbContext(string nameOrConnectionString) : base(nameOrConnectionString) { } // to override db naming convention to use existing db created by MagicContext
 
-            public DbSet<ViewRabbit> ViewRabbits { get; set; }
-        }
+			public DbSet<ViewRabbit> ViewRabbits { get; set; }
+		}
 
-        public class ViewRabbit : Rabbit { }
+		public class ViewRabbit : Rabbit { }
 
-        [Test]
+		[Test]
 		public void IgnoresRuntimeValues()
 		{
 			using (var context = new MagicContext())
