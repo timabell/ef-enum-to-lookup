@@ -18,7 +18,7 @@ Usage
 -----
 
 Run `EnumToLookup.Apply()` from your Seed method in either your database initializer
-or your EF Migrations.
+or your EF Migrations. The generator will create foreign key constraints for all enum (look up) columns of underlaying tables. Views are also supported in case you access them with Entity Framework but you should take care about referencial integrity yourself.
 
 Use the properties exposed to control behaviour.
 
