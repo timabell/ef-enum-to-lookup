@@ -100,7 +100,7 @@ end
 				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
 
 				sql.AppendFormat(
-					" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{4}].[{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);\r\n",
+					" IF OBJECT_ID('{4}.{0}', 'F') IS NULL ALTER TABLE [{4}].[{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);\r\n",
 					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name), enumReference.ReferencingSchema
 				);
 			}
