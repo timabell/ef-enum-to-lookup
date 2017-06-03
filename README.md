@@ -45,6 +45,8 @@ Contributing
 
 Feedback, bug reports, pull requests all welcome, head over to github.
 
+Fund development, PR handling etc: https://www.patreon.com/timabell
+
 Repository
 ----------
 
