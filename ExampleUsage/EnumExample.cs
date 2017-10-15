@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using EfEnumToLookup.LookupGenerator;
 using NUnit.Framework;
@@ -64,6 +65,8 @@ namespace ExampleUsage
 	public class MyDbContext : DbContext
 	{
 		public DbSet<Foo> Foos { get; set; }
+
+        
 	}
 
 	/// <summary>
@@ -74,7 +77,24 @@ namespace ExampleUsage
 		public int Id { get; set; }
 		public Size Size { get; set; }
 		public Shape Shape { get; set; }
+
+        public Bar Bar { get; set; }
 	}
+
+    [ComplexType]
+    public class Bar
+    {
+        public string Name { get; set; }
+        public Tail Tail { get; set; }
+    }
+
+    [ComplexType]
+    public class Tail
+    {
+        public Size Size { get; set; }
+        public Shape Shape { get; set; }
+    }
+
 
 	/// <summary>
 	/// Example enum that will be converted into a lookup table.
