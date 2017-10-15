@@ -58,7 +58,13 @@
   <ItemGroup>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\Fur.cs" />
+    <Compile Include="Model\JellyBean.cs" />
+    <Compile Include="Model\CandyBag.cs" />
+    <Compile Include="Model\CandySize.cs" />
     <Compile Include="Model\Pedigree.cs" />
+    <Compile Include="Model\CandyLook.cs" />
+    <Compile Include="Model\Lollipop.cs" />
+    <Compile Include="Model\ThreeChoicesOfLollipops.cs" />
     <Compile Include="Model\Truck.cs" />
     <Compile Include="Model\Car.cs" />
     <Compile Include="Model\Vehicle.cs" />
