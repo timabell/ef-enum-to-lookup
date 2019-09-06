@@ -41,6 +41,44 @@ namespace EfEnumToLookupTests.Tests
 			TestPrefixConfig(null, "select 1 from Ears");
 		}
 
+		[Test]
+		public void SetsVarcharTypeForNameField()
+		{
+			string colType = TestNameFieldType(NameFieldType.Varchar);
+			Assert.AreEqual(colType.ToLower(), "varchar");
+		}
+
+
+		private string TestNameFieldType(NameFieldType columnType)
+		{
+			// arrange
+			var enumToLookup = new EnumToLookup
+			{
+				TableNamePrefix = null,
+				TableNameSuffix = null,
+				NameFieldType = NameFieldType.Varchar,
+			};
+			TestConfig("select 1 from Ears", enumToLookup);
+			string dbColumnType = GetNameColumnType("Ears");
+			return dbColumnType;
+		}
+
+		private string GetNameColumnType(string tableName)
+		{
+			string sql = $@"
+				SELECT DATA_TYPE 
+				FROM INFORMATION_SCHEMA.COLUMNS
+				WHERE TABLE_NAME = '{tableName}' AND 
+					COLUMN_NAME = 'Name'";
+
+			using (var context = new MagicContext())
+			{
+				string columnType = context.Database.SqlQuery<string>(sql)
+					.FirstOrDefaultAsync().GetAwaiter().GetResult();
+				return columnType;
+			}
+		}
+
 		private static void TestSuffixConfig(string tableNameSuffix, string testSql)
 		{
 			// arrange

@@ -13,6 +13,12 @@ namespace EfEnumToLookup.LookupGenerator
 		int NameFieldLength { get; set; }
 
 		/// <summary>
+		/// Type of name field in enum table. Using varchar allows to reduce size of column.
+		/// Default value is NVarchar
+		/// </summary>
+		NameFieldType NameFieldType { get; set; }
+
+		/// <summary>
 		/// Prefix to add to all the generated tables to separate help group them together
 		/// and make them stand out as different from other tables.
 		/// </summary>

@@ -29,6 +29,7 @@
 		{
 			// set default behaviour, can be overridden by setting properties on object before calling Apply()
 			NameFieldLength = 255;
+			NameFieldType = NameFieldType.NVarchar;
 			TableNamePrefix = "Enum_";
 			_enumParser = new EnumParser { SplitWords = true };
 			UseTransaction = true;
@@ -49,6 +50,12 @@
 		/// Adjust to suit your data if required, defaults to 255.
 		/// </summary>
 		public int NameFieldLength { get; set; }
+
+		/// <summary>
+		/// Type of name field in enum table. Using varchar allows to reduce size of column.
+		/// Default value is NVarchar
+		/// </summary>
+		public NameFieldType NameFieldType { get; set; }
 
 		/// <summary>
 		/// Prefix to add to all the generated tables to separate help group them together
@@ -114,6 +121,7 @@
 			IDbHandler dbHandler = new SqlServerHandler
 			{
 				NameFieldLength = NameFieldLength,
+				NameFieldType = NameFieldType,
 				TableNamePrefix = TableNamePrefix,
 				TableNameSuffix = TableNameSuffix,
 				UseTransaction = UseTransaction,
