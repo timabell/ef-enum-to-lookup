@@ -2,6 +2,7 @@
 
 namespace EfEnumToLookupTests.Model
 {
+    [Table("Rabbit", Schema = "animals")]
 	public class Rabbit
 	{
 		public int Id { get; set; }
