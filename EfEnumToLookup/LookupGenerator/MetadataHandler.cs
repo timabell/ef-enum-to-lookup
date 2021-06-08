@@ -58,10 +58,14 @@
 			{
 				if (edmProperty.IsEnumType)
 				{
+
+					var propertyMapping = GetPropertyMapping(mappingFragment.PropertyMappings, edmProperty);
+					var propertyColumnName = GetColumnNameFromPropertyMapping(edmProperty, propertyMapping);
+
 					references.Add(new EnumReference
 					{
 						ReferencingTable = table,
-						ReferencingField = GetColumnName(mappingFragment, edmProperty),
+						ReferencingField = propertyColumnName,
 						EnumType = objectItemCollection.GetClrType(edmProperty.EnumType),
 					});
 					continue;
@@ -69,17 +73,54 @@
 
 				if (edmProperty.IsComplexType)
 				{
-					// Note that complex types can't be nested (ref http://stackoverflow.com/a/20332503/10245 )
-					// so it's safe to not recurse even though the data model suggests you should have to.
-					references.AddRange(
-						from nestedProperty in edmProperty.ComplexType.Properties
-						where nestedProperty.IsEnumType
-						select new EnumReference
+					// Use a queue to be able to process nested complex properties
+					// A kvp is stored where key item is the complex property and the value item is property mapping for that complex property
+					Queue<KeyValuePair<EdmProperty, ComplexPropertyMapping>> complexPropertyQueue = new Queue<KeyValuePair<EdmProperty, ComplexPropertyMapping>>();
+
+					complexPropertyQueue.Enqueue(new KeyValuePair<EdmProperty, ComplexPropertyMapping>(
+							edmProperty,
+							GetComplexPropertyMapping(mappingFragment.PropertyMappings, edmProperty)
+						));
+
+					do
+					{
+						//this loop adds references to enum properties from within the complex type and also
+						//processes nested complex properties recursively by utilizing the queue.
+						//the search is done in BFS fashion
+
+						var complexPropAndContainingProperties = complexPropertyQueue.Dequeue();
+
+						var prop = complexPropAndContainingProperties.Key;
+						var propertyMapping = complexPropAndContainingProperties.Value;
+
+						references.AddRange(
+						(from nestedProperty in prop.ComplexType.Properties
+						 where nestedProperty.IsEnumType
+						 select new EnumReference
+						 {
+							 ReferencingTable = table,
+							 ReferencingField = GetColumnNameForEnumWithinComplexProperty(propertyMapping, prop, nestedProperty),
+							 EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
+						 }).ToArray());
+
+
+						var subPropertyMappings =
+							propertyMapping
+								.TypeMappings
+								.Single(p => p.ComplexType.Name == prop.ComplexType.Name)
+								.PropertyMappings;
+
+						foreach (var nestedComplex in prop.ComplexType.Properties.Where(p => p.IsComplexType))
 						{
-							ReferencingTable = table,
-							ReferencingField = GetColumnName(mappingFragment, edmProperty, nestedProperty),
-							EnumType = objectItemCollection.GetClrType(nestedProperty.EnumType),
-						});
+
+							complexPropertyQueue.Enqueue(new KeyValuePair<EdmProperty, ComplexPropertyMapping>(
+									nestedComplex,
+									GetComplexPropertyMapping(subPropertyMappings, nestedComplex)
+								));
+						}
+
+					} while (complexPropertyQueue.Any());
+
 				}
 			}
 
@@ -128,6 +169,40 @@
 			return GetColumnNameFromPropertyMapping(edmProperty, propertyMapping);
 		}
 
+		/// <summary>
+		/// Gets the name of the column for the property wihin a complex type from the metadata.
+		/// </summary>
+		/// <param name="complexPropertyMapping">EF metadata for finding mappings from conceptual model to db.</param>
+		/// <param name="complexProperty">The complex property containing the enumProperty.</param>
+		/// <param name="enumProperty">The property we want column name for.</param>
+		/// <returns>The column name for the enumProperty</returns>
+		/// <exception cref="EnumGeneratorException">
+		/// </exception>
+		private static string GetColumnNameForEnumWithinComplexProperty(ComplexPropertyMapping complexPropertyMapping, EdmProperty complexProperty, EdmProperty enumProperty)
+		{
+
+
+			var complexTypeMappings = complexPropertyMapping.TypeMappings;
+			if (complexTypeMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} complexPropertyMapping TypeMappings found for property {1}.{2}", complexTypeMappings.Count(), complexProperty, enumProperty));
+			}
+			var complexTypeMapping = complexTypeMappings.Single();
+			var propertyMappings = complexTypeMapping.PropertyMappings.Where(pm => pm.Property.Name == enumProperty.Name).ToList();
+			if (propertyMappings.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} complexMappings found for property {1}.{2}", propertyMappings.Count(), complexProperty, enumProperty));
+			}
+
+			var propertyMapping = propertyMappings.Single();
+
+
+			return GetColumnNameFromPropertyMapping(complexProperty, propertyMapping);
+		}
+
+
 		private static string GetColumnNameFromPropertyMapping(EdmProperty edmProperty, PropertyMapping propertyMapping)
 		{
 			var colMapping = propertyMapping as ScalarPropertyMapping;
@@ -137,6 +212,35 @@
 					"Expected ScalarPropertyMapping but found {0} when mapping property {1}", propertyMapping.GetType(), edmProperty));
 			}
 			return colMapping.Column.Name;
+		}
+
+		private static ComplexPropertyMapping GetComplexPropertyMapping(IEnumerable<PropertyMapping> propertyMappings, EdmProperty edmProperty)
+		{
+
+			var propertyMapping = GetPropertyMapping(propertyMappings, edmProperty);
+
+
+			if (propertyMapping.GetType() != typeof(ComplexPropertyMapping))
+			{
+				throw new EnumGeneratorException(string.Format(
+					"Property {0} is not complex type", edmProperty));
+			}
+			return (ComplexPropertyMapping)propertyMapping;
+		}
+
+		private static PropertyMapping GetPropertyMapping(IEnumerable<PropertyMapping> propertyMapping, EdmProperty edmProperty)
+		{
+
+			var matches = propertyMapping.Where(p => p.Property.Name == edmProperty.Name).ToList();
+
+
+			if (matches.Count() != 1)
+			{
+				throw new EnumGeneratorException(string.Format(
+					"{0} matches found for property {1}", matches.Count(), edmProperty));
+			}
+			var match = matches.Single();
+			return match;
 		}
 
 		private static PropertyMapping GetPropertyMapping(StructuralTypeMapping mappingFragment, EdmProperty edmProperty)

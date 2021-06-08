@@ -20,6 +20,9 @@ namespace EfEnumToLookupTests.Db
 		// Table-per-Type (TPT)
 		public DbSet<Vehicle> Vehicles { get; set; }
 
+        // Nested enum in complex type
+        public DbSet<CandyBag> CandyBags { get; set; }
+
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<Fox>().Map(f => f.ToTable("Foxies"));

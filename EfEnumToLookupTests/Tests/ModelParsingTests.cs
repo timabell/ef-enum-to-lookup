@@ -37,8 +37,12 @@ namespace EfEnumToLookupTests.Tests
 			var eons = references.Count(r => r.EnumType == typeof(Eon));
 			Assert.AreEqual(2, eons, "Wrong number of Eon refs found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
-			Assert.AreEqual(13, references.Count);
-		}
+			Assert.AreEqual(17, references.Count);
+
+            var candySizes = references.Count(r => r.EnumType == typeof(CandySize));
+            Assert.AreEqual(4, candySizes);
+
+        }
 
 		[Test]
 		public void FindsEnumOnType()
