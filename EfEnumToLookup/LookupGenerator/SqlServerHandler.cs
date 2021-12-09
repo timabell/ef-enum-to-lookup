@@ -99,10 +99,13 @@ end
 			{
 				var fkName = string.Format("FK_{0}_{1}", enumReference.ReferencingTable, enumReference.ReferencingField);
 
+				var schemaPrefix = enumReference.ReferencingSchema == null ? string.Empty : $"{enumReference.ReferencingSchema}.";
+			    var schemaPrefixQuoted = enumReference.ReferencingSchema == null ? string.Empty : $"[{enumReference.ReferencingSchema}].";
+
 				sql.AppendFormat(
-					" IF OBJECT_ID('{0}', 'F') IS NULL ALTER TABLE [{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);\r\n",
-					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name)
-				);
+					" IF OBJECT_ID('{4}{0}', 'F') IS NULL ALTER TABLE {5}[{1}] ADD CONSTRAINT {0} FOREIGN KEY ([{2}]) REFERENCES [{3}] (Id);\r\n",
+					fkName, enumReference.ReferencingTable, enumReference.ReferencingField, TableName(enumReference.EnumType.Name), schemaPrefix, schemaPrefixQuoted
+                );
 			}
 			return sql.ToString();
 		}

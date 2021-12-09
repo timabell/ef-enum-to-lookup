@@ -28,19 +28,22 @@ namespace EfEnumToLookupTests.Tests
 			{
 				references = _enumToLookup.FindEnumReferences(context);
 			}
-			var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
+            var legsWithSchema = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs" && r.ReferencingSchema == "animals");
+            Assert.IsNotNull(legsWithSchema, "SpeedyLegs ref not found");
+
+            var legs = references.SingleOrDefault(r => r.ReferencingField == "SpeedyLegs");
 			Assert.IsNotNull(legs, "SpeedyLegs ref not found");
 			var ears = references.SingleOrDefault(r => r.ReferencingField == "TehEars");
 			Assert.IsNotNull(ears, "TehEars ref not found");
 			var echos = references.SingleOrDefault(r => r.ReferencingField == "EchoType");
-			Assert.IsNotNull(echos, "EchoType ref not found");
+			Assert.IsNotNull(echos, "EchoType ref not found");  
 			var eons = references.Count(r => r.EnumType == typeof(Eon));
 			Assert.AreEqual(2, eons, "Wrong number of Eon refs found");
 			Assert.IsTrue(references.All(r => r.EnumType.IsEnum), "Non-enum type found");
 			Assert.AreEqual(13, references.Count);
 		}
 
-		[Test]
+        [Test]
 		public void FindsEnumOnType()
 		{
 			var enums = _enumToLookup.FindEnums(typeof (Rabbit));
@@ -57,5 +60,6 @@ namespace EfEnumToLookupTests.Tests
 			Assert.IsNotNull(prop, "Enum property not found");
 			Assert.AreEqual(typeof (Legs?), prop.PropertyType);
 		}
-	}
+        
+    }
 }
